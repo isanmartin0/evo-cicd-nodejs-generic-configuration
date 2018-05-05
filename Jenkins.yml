@@ -1,0 +1,70 @@
+openshift:
+  templatePath: kube/template.yaml
+
+maven:
+  profileFeature:
+  profileDevelop:
+  profileRelease:
+  profileMaster:
+  profileHotfix:
+
+spring:
+  profileFeature: dev
+  profileDevelop: dev
+  profileRelease: uat
+  profileMaster: prod
+  profileHotfix: uat
+  useConfigurationProfilesFiles: false
+  persistConfigurationProfilesFiles: false
+  configMapsVolumePersistPath: /usr/local/tomcat/conf
+
+confirmDeploy:
+  - master
+timeoutConfirmDeploy: true
+timeoutConfirmDeployTime: 30
+timeoutConfirmDeployUnit: MINUTES
+
+testing:
+  predeploy:
+    unitTesting:
+      - feature
+      - develop
+      - release
+      - hotfix
+    sonarQube:
+      - feature
+      - develop
+      - release
+      - hotfix
+    checkstyle:
+      # - feature
+      # - develop
+      # - release
+
+  postdeploy:
+    smokeTesting:
+      - release
+      - master
+    securityTesting:
+      - develop
+      - release
+    performanceTesting:
+      - release
+      - hotfix
+    acceptanceTesting:
+      - develop
+      - release
+
+notifications:
+  branch:
+    - feature
+    - develop
+    - release
+    - master
+    - hotfix
+type: slack
+
+jenkins:
+  maxOldBuildsToKeep: 10
+  daysOldBuildsToKeep: 0
+  errorOnPostDeployTestsUnstableResult: true
