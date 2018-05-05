@@ -92,7 +92,7 @@ def runNodejsGenericJenkinsfile() {
         stage('Detect Node.js Parallel project configuration (PPC)') {
 
             packageJSON = readJSON file: 'package.json'
-            projectURL = packageJSON.repository[0].url
+            projectURL = packageJSON.repository.url
             echo "projectURL: ${projectURL}"
             throw new hudson.AbortException('XXXXXXXXXXXXXXXXX')
 
