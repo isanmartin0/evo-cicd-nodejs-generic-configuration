@@ -1,0 +1,1 @@
+# evo-cicd-nodejs-generic-configuration
