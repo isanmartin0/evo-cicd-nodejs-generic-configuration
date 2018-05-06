@@ -49,8 +49,7 @@ def runNodejsGenericJenkinsfile() {
 
     def packageJSON
     def projectURL
-    def artifactId
-    def groupId
+    def moduleName
 
     int maxOldBuildsToKeep = 0
     int daysOldBuildsToKeep = 0
@@ -94,10 +93,10 @@ def runNodejsGenericJenkinsfile() {
             packageJSON = readJSON file: 'package.json'
             projectURL = packageJSON.repository.url
             echo "projectURL: ${projectURL}"
-            throw new hudson.AbortException('XXXXXXXXXXXXXXXXX')
 
-            artifactId = pom.artifactId
-            groupId = utils.getProjectGroupId(pom.groupId, pom.parent.groupId, false)
+
+            moduleName = packageJSON.name
+            echo "moduleName: ${moduleName}"
 
             try {
                 def parallelConfigurationProject = utils.getParallelConfigurationProjectURL(projectURL, artifactId)
@@ -158,7 +157,7 @@ def runNodejsGenericJenkinsfile() {
             }
         }
 
-
+        throw new hudson.AbortException('XXXXXXXXXXXXXXXXX')
 
         if (isPPCJenkinsFile) {
 
