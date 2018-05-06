@@ -99,7 +99,7 @@ def runNodejsGenericJenkinsfile() {
             echo "moduleName: ${moduleName}"
 
             try {
-                def parallelConfigurationProject = utils.getParallelConfigurationProjectURL(projectURL, artifactId)
+                def parallelConfigurationProject = utils.getParallelConfigurationProjectURL(projectURL, moduleName)
 
                 echo "Node.js parallel configuration project ${parallelConfigurationProject} searching"
 
