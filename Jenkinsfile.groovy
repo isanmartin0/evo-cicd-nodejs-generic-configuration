@@ -34,8 +34,7 @@ def runNodejsGenericJenkinsfile() {
     def isPPCOpenshiftTemplate = false
     def jenkinsFilePathPPC = relativeTargetDirPPC + 'Jenkinsfile'
     def jenkinsYamlPathPPC = relativeTargetDirPPC + 'Jenkins.yml'
-    def openshiftTemplatePathPPC = relativeTargetDirPPC + 'kube/template.yaml'
-    def configMapsVolumePersistDefaultPath = '/usr/local/tomcat/conf'
+    def openshiftNodejsTemplatePathPPC = relativeTargetDirPPC + 'kube/Nodejs_template.yaml'
     def jenknsFilePipelinePPC
 
     //Generic project configuration properties
@@ -44,7 +43,7 @@ def runNodejsGenericJenkinsfile() {
     def branchGenericPGC = 'master'
     def credentialsIdGenericPGC = '4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials of the generic configuration project
     def jenkinsYamlGenericPath = relativeTargetDirGenericPGC + 'Jenkins.yml'
-    def openshiftTemplateGenericPath = relativeTargetDirGenericPGC + 'kube/template.yaml'
+    def openshiftNodejsTemplateGenericPath = relativeTargetDirGenericPGC + 'kube/Nodejs_template.yaml'
     def isGenericJenkinsYaml = false
 
     def packageJSON

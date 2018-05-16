@@ -32,10 +32,10 @@ testing:
       - release
       - hotfix
     sonarQube:
-      - feature
-      - develop
-      - release
-      - hotfix
+     # - feature
+     # - develop
+     # - release
+     # - hotfix
     checkstyle:
       # - feature
       # - develop
