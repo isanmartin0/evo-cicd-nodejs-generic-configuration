@@ -1,25 +1,26 @@
 openshift:
   templatePath: kube/template.yaml
 
-maven:
-  profileFeature:
-  profileDevelop:
-  profileRelease:
-  profileMaster:
-  profileHotfix:
 
-spring:
-  profileFeature: dev
-  profileDevelop: dev
-  profileRelease: uat
-  profileMaster: prod
-  profileHotfix: uat
-  useConfigurationProfilesFiles: false
-  persistConfigurationProfilesFiles: false
-  configMapsVolumePersistPath: /usr/local/tomcat/conf
+imageStreamNodejsVersion: 8
+devMode: false
+debugPort: 5858
+useNpmMirror: false
+npmMirror: https://registry.npmjs.org/
+useAlternateNpmRun: false
+alternateNpmRunScript: script_prueba
+
+ports:
+  useSpecificPort: true
+  portNumber: 3000
+  createPortEnvironmentVariable: true
+
+npmRegistryDeploy:
+  - release
 
 confirmDeploy:
   - master
+
 timeoutConfirmDeploy: true
 timeoutConfirmDeployTime: 30
 timeoutConfirmDeployUnit: MINUTES
@@ -27,15 +28,16 @@ timeoutConfirmDeployUnit: MINUTES
 testing:
   predeploy:
     unitTesting:
-      - feature
+     # - feature
       - develop
-      - release
+     # - release
       - hotfix
+      - master
     sonarQube:
-      - feature
-      - develop
-      - release
-      - hotfix
+      # - feature
+      # - develop
+      # - release
+      # - hotfix
     checkstyle:
       # - feature
       # - develop

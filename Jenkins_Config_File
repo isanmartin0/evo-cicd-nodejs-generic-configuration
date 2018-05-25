@@ -1,0 +1,80 @@
+#!/usr/bin/env groovy
+@Library('msa-cicd-jenkins-shared-libs')_
+
+def jenkinsFile
+def gitDefaultProjectConfigurationPath='https://github.com/isanmartin0/evo-cicd-generic-configuration'
+def gitNodejsDefaultProjectConfigurationPath='https://github.com/isanmartin0/evo-cicd-nodejs-generic-configuration'
+def gitDefaultProjectConfigurationJenkinsFile='Jenkinsfile'
+def gitDefaultProjectConfigurationBranch='master'
+def gitDefaultProjectConfigurationCredentials='4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials for the generic configuration project
+def gitDefaultProjectConfigurationJenkinsNode=''
+def mavenApplicationFile='pom.xml'
+def nodeApplicationFile='package.json'
+def isMavenApplication=false
+def isNodejsApplication=false
+def projectURL=''
+
+node() {
+  stage('Detect application type') {
+    echo "Detecting application type"
+    checkout scm
+
+    try {
+      def pom = readMavenPom()
+      isMavenApplication=true
+      echo "pom.xml is found. Is a maven application type"
+    }
+    catch (exc) {
+      echo "pom.xml not found"
+    }
+
+    if (!isMavenApplication) {
+      try {
+        def packageJSON = readJSON file: 'package.json'
+        isNodejsApplication=true
+        echo "package.json is found. Is a Node.js application type"
+      }
+      catch (exc) {
+        echo "package.json not found"
+      }
+    }
+
+    if (!isMavenApplication && !isNodejsApplication) {
+     	throw new hudson.AbortException("A maven or Node.js application type not found. ")
+    }
+
+  }
+}
+stage('Generic Jenkinsfile (PGC) load') {
+
+  if (isMavenApplication) {
+
+    echo "Loading Maven Jenkins pipeline (PGC)"
+
+    jenkinsFile = fileLoader.fromGit(gitDefaultProjectConfigurationJenkinsFile,
+                                     gitDefaultProjectConfigurationPath,
+                                     gitDefaultProjectConfigurationBranch,
+                                     gitDefaultProjectConfigurationCredentials,
+                                     gitDefaultProjectConfigurationJenkinsNode)
+
+	jenkinsFile.runGenericJenkinsfile()
+
+
+
+  } else if (isNodejsApplication) {
+
+		echo "Loading Node.js Jenkins pipeline (PGC)"
+
+    	jenkinsFile = fileLoader.fromGit(gitDefaultProjectConfigurationJenkinsFile,
+                                     	 gitNodejsDefaultProjectConfigurationPath,
+                                     	 gitDefaultProjectConfigurationBranch,
+                                     	 gitDefaultProjectConfigurationCredentials,
+                                     	 gitDefaultProjectConfigurationJenkinsNode)
+
+  		jenkinsFile.runNodejsGenericJenkinsfile()
+
+  } else {
+    throw new hudson.AbortException("A maven or Node.js application type not found. ")
+  }
+
+}

@@ -1,30 +1,30 @@
 #!/usr/bin/groovy
-import com.evobanco.Utils
+import com.evobanco.NodejsUtils
 import com.evobanco.Constants
 
 def runNodejsGenericJenkinsfile() {
 
-    def utils = new com.evobanco.Utils()
+    def utils = new com.evobanco.NodejsUtils()
 
     def artifactorySnapshotsURL = 'https://digitalservices.evobanco.com/artifactory/libs-snapshot-local'
     def artifactoryReleasesURL = 'https://digitalservices.evobanco.com/artifactory/libs-release-local'
+
+    def npmRepositoryURL = 'https://digitalservices.evobanco.com/artifactory/npm-release-local'
+
     def sonarQube = 'http://sonarqube:9000'
     def openshiftURL = 'https://openshift.grupoevo.corp:8443'
     def openshiftCredential = 'openshift'
     def registry = '172.20.253.34'
     def artifactoryCredential = 'artifactory-token'
     def jenkinsNamespace = 'cicd'
-    def mavenCmd = 'mvn -U -B -s /opt/evo-maven-settings/evo-maven-settings.xml'
-    def mavenProfile = ''
-    def springProfile = ''
     def params
     def envLabel
     def branchName
     def branchNameHY
     def branchType
-    def artifactoryRepoURL
 
-    //Parallet project configuration (PPC) properties
+
+    //Parallel project configuration (PPC) properties
     def branchPPC = 'master'
     def credentialsIdPPCDefault = '4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials of the parallel configuration project
     def credentialsIdPPC
@@ -37,18 +37,25 @@ def runNodejsGenericJenkinsfile() {
     def openshiftNodejsTemplatePathPPC = relativeTargetDirPPC + 'kube/Nodejs_template.yaml'
     def jenknsFilePipelinePPC
 
+
     //Generic project configuration properties
-    def gitDefaultProjectConfigurationPath='https://github.com/isanmartin0/evo-cicd-generic-configuration'
+    def gitDefaultProjectConfigurationPath='https://github.com/isanmartin0/evo-cicd-nodejs-generic-configuration'
     def relativeTargetDirGenericPGC = '/tmp/configs/generic/'
     def branchGenericPGC = 'master'
     def credentialsIdGenericPGC = '4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials of the generic configuration project
     def jenkinsYamlGenericPath = relativeTargetDirGenericPGC + 'Jenkins.yml'
-    def openshiftNodejsTemplateGenericPath = relativeTargetDirGenericPGC + 'kube/Nodejs_template.yaml'
+    def openshiftNodejsTemplateGenericPath = relativeTargetDirGenericPGC + 'kube/nodejs_template.yaml'
     def isGenericJenkinsYaml = false
+
 
     def packageJSON
     def projectURL
-    def moduleName
+    def packageName
+    def packageVersion
+    def packageTag
+    def packageTarball
+    def isScopedPackage
+    def packageScope
 
     int maxOldBuildsToKeep = 0
     int daysOldBuildsToKeep = 0
@@ -64,12 +71,24 @@ def runNodejsGenericJenkinsfile() {
     def openshift_route_hostname = ''
     def openshift_route_hostname_with_protocol = ''
 
+    //Parameters nodejs
+    int port_default = 8080
+    int debug_port_default = 5858
+    int image_stream_nodejs_version_default = 8
+
+    def build_from_registry_url = 'https://github.com/isanmartin0/s2i-nodejs-container.git'
+    def build_from_artifact_branch = 'master'
+
     echo "BEGIN NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
 
     node('nodejs') {
 
-        //sleep 10
-        checkout scm
+        stage('Checkout') {
+            echo 'Getting source code...'
+            checkout scm
+            projectURL = scm.userRemoteConfigs[0].url
+            echo "Source code hosted in: ${projectURL}"
+        }
 
 
         try {
@@ -90,12 +109,22 @@ def runNodejsGenericJenkinsfile() {
         stage('Detect Node.js Parallel project configuration (PPC)') {
 
             packageJSON = readJSON file: 'package.json'
-            projectURL = packageJSON.repository.url
-            echo "projectURL: ${projectURL}"
 
+            packageName = packageJSON.name
+            echo "packageName: ${packageName}"
+            packageVersion = packageJSON.version
+            echo "packageVersion: ${packageVersion}"
+            packageTag = utils.getPackageTag(packageName, packageVersion)
+            echo "packageTag: ${packageTag}"
+            packageTarball = utils.getPackageTarball(packageName, packageVersion)
+            echo "packageTarball: ${packageTarball}"
+            isScopedPackage = utils.isScopedPackage(packageName)
+            echo "isScopedPackage: ${isScopedPackage}"
 
-            moduleName = packageJSON.name
-            echo "moduleName: ${moduleName}"
+            if (isScopedPackage) {
+                packageScope = utils.getPackageScope(packageName)
+                echo "packageScope: ${packageScope}"
+            }
 
             try {
                 def parallelConfigurationProject = utils.getParallelConfigurationProjectURL(projectURL, moduleName)
@@ -113,6 +142,7 @@ def runNodejsGenericJenkinsfile() {
                                       userRemoteConfigs                : [[credentialsId: credentialsIdPPC,
                                                                            url          : parallelConfigurationProject]]])
                         }
+
                 echo "Node.js Parallel configuration project ${parallelConfigurationProject} exits"
 
                 // Jenkinsfile
@@ -156,7 +186,6 @@ def runNodejsGenericJenkinsfile() {
             }
         }
 
-        throw new hudson.AbortException('XXXXXXXXXXXXXXXXX')
 
         if (isPPCJenkinsFile) {
 
@@ -241,6 +270,21 @@ def runNodejsGenericJenkinsfile() {
 
             }
 
+            stage('Initialize') {
+                echo 'Initializing...'
+                def node = tool name: 'Node-9.5.0', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                env.PATH = "${node}/bin:${env.PATH}"
+
+                sh "node -v"
+
+            }
+
+            stage('TEST npm whoami') {
+                withNPM(npmrcConfig: 'my-custom-npmrc') {
+                    sh 'npm whoami'
+                }
+            }
+
 
             stage('Prepare') {
                 echo "Prepare stage (PGC)"
@@ -256,19 +300,150 @@ def runNodejsGenericJenkinsfile() {
                 branchNameHY = branchName.replace("/", "-").replace(".", "-").replace("_","-")
                 echo "Branch name processed: ${branchName}"
 
-                artifactoryRepoURL = (branchType == 'master' || branchType == 'release' || branchType == 'hotfix')  ? artifactoryReleasesURL : artifactorySnapshotsURL
-
-                def isValidVersion = utils.isValidBranchPomVersion(pom.version, branchType)
-
-                if (!isValidVersion) {
-                    //Sufix -SNAPSHOT is required for develop and feature branch types and is forbidden for release,hotfix and master branch types
-                    currentBuild.result = Constants.FAILURE_BUILD_RESULT
-                    throw new hudson.AbortException('Version of artifact in pom is not allowed for this type of branch')
-                }
-
             }
 
+            stage ('Openshift environment') {
+                switch (branchType) {
+                    case 'feature':
+                        echo "Detect feature type branch"
+                        envLabel="dev"
+                        break
+                    case 'develop':
+                        echo "Detect develop type branch"
+                        envLabel="dev"
+                        break
+                    case 'release':
+                        echo "Detect release type branch"
+                        envLabel="uat"
+                        break
+                    case 'master':
+                        echo "Detect master type branch"
+                        envLabel="pro"
+                        break
+                    case 'hotfix':
+                        echo "Detect hotfix type branch"
+                        envLabel="uat"
+                        break
+                }
+                echo "Environment selected: ${envLabel}"
+            }
 
+            if (branchName != 'master') {
+
+                stage('Build') {
+                    echo 'Building dependencies...'
+
+                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                        sh 'npm i'
+                    }
+                }
+
+                if (branchType in params.testing.predeploy.unitTesting) {
+                    stage('Test') {
+
+                        echo 'Installing jest'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm i -D jest'
+                        }
+
+                        echo 'Installing jest-sonar-reporter'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm i -D jest-sonar-reporter'
+                        }
+
+                        echo 'Testing...'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm test'
+                        }
+
+/*
+                        echo 'Publishing Test Coverage...'
+                        		publishHTML (target: [
+                        			allowMissing: false,
+                        			alwaysLinkToLastBuild: false,
+                        			keepAll: true,
+                        			reportDir: 'coverage/lcov-report',
+                        			reportFiles: 'index.html',
+                        			reportName: "Application Test Coverage"
+                        		])
+*/
+                    }
+                } else {
+                    echo "Skipping unit tests..."
+                }
+
+
+                if (branchType in params.testing.predeploy.sonarQube) {
+
+                    stage('SonarQube') {
+                        echo "Running SonarQube..."
+
+                        def sonar_project_key = packageName + "-" + branchNameHY
+                        def sonar_project_name = packageName + "-" + branchNameHY
+
+                        echo "sonar_project_key: ${sonar_project_key}"
+                        echo "sonar_project_name: ${sonar_project_name}"
+
+                        echo "Replacing sonar.project.key and sonar.project.name variables with real values"
+                        sh "sed -i -e 's/{sonarProjectKeyPlaceholder}/${sonar_project_key}/g' sonar-project.properties"
+                        sh "sed -i -e 's/{sonarProjectNamePlaceholder}/${sonar_project_name}/g' sonar-project.properties"
+
+                        // requires SonarQube Scanner 3.1+
+                        def scannerHome = tool 'SonarQube Scanner 3.1.0';
+                        withSonarQubeEnv('sonarqube') {
+                            sh "${scannerHome}/bin/sonar-scanner -X"
+                        }
+                    }
+
+                } else {
+                    echo "Skipping Running SonarQube..."
+                }
+
+
+                if (branchType in params.npmRegistryDeploy) {
+
+                    stage('Artifact Registry Publish') {
+                        echo "Publishing artifact to a NPM registry"
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            echo 'npm whoami'
+                            sh 'npm whoami'
+                            echo 'npm config registry'
+                            sh 'npm config get registry'
+                            //sh 'npm publish'
+                        }
+
+                        echo "Setting source code to build from URL (build from registry package)"
+                        echo "Source URL: ${projectURL} --> ${build_from_registry_url}"
+                        projectURL = build_from_registry_url
+                        echo "new projectURL: ${projectURL}"
+                        echo "Setting source code to build from branch (build from registry package)"
+                        echo "Source branch: ${branchName} --> ${build_from_artifact_branch}"
+                        branchName = build_from_artifact_branch
+                        echo "new branchName: ${branchName}"
+                    }
+
+                } else {
+                    echo "******* WARNING. PACKAGE NOT PUBLISHED ON ANY NPM REGISTRY ******* "
+                    echo "The source code will be taken from a code repository, not from an artifact repository."
+                    echo "Source URL: ${projectURL}"
+                    echo "Source branch: ${branchName}"
+                }
+
+            } else {
+
+                stage('Check published package on Artifactory') {
+
+                    //Get the location of the tarball
+                    sh 'tarball_location=$(npm view "${ddd}" dist.tarball)'
+
+
+                    //TODO: Completar check
+
+                }
+
+
+
+            }
 
         }
 
