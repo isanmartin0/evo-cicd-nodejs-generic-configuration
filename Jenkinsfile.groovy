@@ -95,7 +95,7 @@ def runNodejsGenericJenkinsfile() {
         echo 'Pipeline begin timestamp... '
         sh 'date'
 
-        echo "${currentBuild.durationString.replace(' and counting', '')}"
+        echo "Current build duration: ${currentBuild.durationString.replace(' and counting', '')}"
 
 
         stage('Checkout') {
@@ -319,7 +319,6 @@ def runNodejsGenericJenkinsfile() {
 
             stage('TEST npm whoami') {
                 withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                    echo "NPM_TOKEN  is: $NPM_TOKEN"
                     withNPM(npmrcConfig: 'my-custom-npmrc') {
                         sh 'npm whoami'
                     }
@@ -374,27 +373,31 @@ def runNodejsGenericJenkinsfile() {
                 stage('Build') {
                     echo 'Building dependencies...'
 
-                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                        sh 'npm i'
+                    withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm i'
+                        }
                     }
                 }
 
                 if (branchType in params.testing.predeploy.unitTesting) {
                     stage('Test') {
 
-                        echo 'Installing jest'
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
-                            sh 'npm i -D jest'
-                        }
+                        withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
+                            echo 'Installing jest'
+                            withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                sh 'npm i -D jest'
+                            }
 
-                        echo 'Installing jest-sonar-reporter'
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
-                            sh 'npm i -D jest-sonar-reporter'
-                        }
+                            echo 'Installing jest-sonar-reporter'
+                            withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                sh 'npm i -D jest-sonar-reporter'
+                            }
 
-                        echo 'Testing...'
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
-                            sh 'npm test'
+                            echo 'Testing...'
+                            withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                sh 'npm test'
+                            }
                         }
 
 /*
@@ -445,12 +448,15 @@ def runNodejsGenericJenkinsfile() {
 
                     stage('Artifact Registry Publish') {
                         echo "Publishing artifact to a NPM registry"
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
-                            echo 'npm whoami'
-                            sh 'npm whoami'
-                            echo 'npm config registry'
-                            sh 'npm config get registry'
-                            //sh 'npm publish'
+
+                        withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
+                            withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                echo 'npm whoami'
+                                sh 'npm whoami'
+                                echo 'npm config registry'
+                                sh 'npm config get registry'
+                                //sh 'npm publish'
+                            }
                         }
 
                         echo "Setting source code to build from URL (build from registry package)"
@@ -932,6 +938,8 @@ def runNodejsGenericJenkinsfile() {
         node {
             echo 'Pipeline end timestamp... '
             sh 'date'
+
+            echo "Current build duration: ${currentBuild.durationString.replace(' and counting', '')}"
 
         }
 
