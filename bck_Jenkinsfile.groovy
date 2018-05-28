@@ -331,7 +331,104 @@ def runNodejsGenericJenkinsfile() {
 
             if (branchName != 'master') {
 
+                stage('Build') {
+                    echo 'Building dependencies...'
 
+                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                        sh 'npm i'
+                    }
+                }
+
+                if (branchType in params.testing.predeploy.unitTesting) {
+                    stage('Test') {
+
+                        echo 'Installing jest'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm i -D jest'
+                        }
+
+                        echo 'Installing jest-sonar-reporter'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm i -D jest-sonar-reporter'
+                        }
+
+                        echo 'Testing...'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm test'
+                        }
+
+/*
+                        echo 'Publishing Test Coverage...'
+                        		publishHTML (target: [
+                        			allowMissing: false,
+                        			alwaysLinkToLastBuild: false,
+                        			keepAll: true,
+                        			reportDir: 'coverage/lcov-report',
+                        			reportFiles: 'index.html',
+                        			reportName: "Application Test Coverage"
+                        		])
+*/
+                    }
+                } else {
+                    echo "Skipping unit tests..."
+                }
+
+
+                if (branchType in params.testing.predeploy.sonarQube) {
+
+                    stage('SonarQube') {
+                        echo "Running SonarQube..."
+
+                        def sonar_project_key = packageName + "-" + branchNameHY
+                        def sonar_project_name = packageName + "-" + branchNameHY
+
+                        echo "sonar_project_key: ${sonar_project_key}"
+                        echo "sonar_project_name: ${sonar_project_name}"
+
+                        echo "Replacing sonar.project.key and sonar.project.name variables with real values"
+                        sh "sed -i -e 's/{sonarProjectKeyPlaceholder}/${sonar_project_key}/g' sonar-project.properties"
+                        sh "sed -i -e 's/{sonarProjectNamePlaceholder}/${sonar_project_name}/g' sonar-project.properties"
+
+                        // requires SonarQube Scanner 3.1+
+                        def scannerHome = tool 'SonarQube Scanner 3.1.0';
+                        withSonarQubeEnv('sonarqube') {
+                            sh "${scannerHome}/bin/sonar-scanner -X"
+                        }
+                    }
+
+                } else {
+                    echo "Skipping Running SonarQube..."
+                }
+
+
+                if (branchType in params.npmRegistryDeploy) {
+
+                    stage('Artifact Registry Publish') {
+                        echo "Publishing artifact to a NPM registry"
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            echo 'npm whoami'
+                            sh 'npm whoami'
+                            echo 'npm config registry'
+                            sh 'npm config get registry'
+                            //sh 'npm publish'
+                        }
+
+                        echo "Setting source code to build from URL (build from registry package)"
+                        echo "Source URL: ${projectURL} --> ${build_from_registry_url}"
+                        projectURL = build_from_registry_url
+                        echo "new projectURL: ${projectURL}"
+                        echo "Setting source code to build from branch (build from registry package)"
+                        echo "Source branch: ${branchName} --> ${build_from_artifact_branch}"
+                        branchName = build_from_artifact_branch
+                        echo "new branchName: ${branchName}"
+                    }
+
+                } else {
+                    echo "******* WARNING. PACKAGE NOT PUBLISHED ON ANY NPM REGISTRY ******* "
+                    echo "The source code will be taken from a code repository, not from an artifact repository."
+                    echo "Source URL: ${projectURL}"
+                    echo "Source branch: ${branchName}"
+                }
 
             } else {
 
@@ -517,6 +614,293 @@ def runNodejsGenericJenkinsfile() {
 
     } // end of node
 
+    if (!isPPCJenkinsFile) {
+        def deploy = 'Yes'
+
+        if (branchType in params.confirmDeploy) {
+            try {
+                stage('Decide on Deploying') {
+
+                    //Parameters timeout deploy answer
+
+                    Boolean timeoutConfirmDeploy = false
+                    int timeoutConfirmDeployTime = 0
+                    String timeoutConfirmDeployUnit = ''
+                    boolean isTimeoutConfirmDeployUnitValid = false
+
+                    echo "params.timeoutConfirmDeploy: ${params.timeoutConfirmDeploy}"
+
+                    if (params.timeoutConfirmDeploy != null) {
+                        timeoutConfirmDeploy = params.timeoutConfirmDeploy.toBoolean()
+                    }
+
+                    if (timeoutConfirmDeploy) {
+                        echo "params.timeoutConfirmDeployTime: ${params.timeoutConfirmDeployTime}"
+                        echo "params.timeoutConfirmDeployUnit: ${params.timeoutConfirmDeployUnit}"
+
+                        String timeoutConfirmDeployTimeParam = params.timeoutConfirmDeployTime
+                        if (timeoutConfirmDeployTimeParam != null && timeoutConfirmDeployTimeParam.isInteger()) {
+                            timeoutConfirmDeployTime = timeoutConfirmDeployTimeParam as Integer
+                        }
+
+                        if (params.timeoutConfirmDeployUnit != null && ("NANOSECONDS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "MICROSECONDS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "MILLISECONDS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "SECONDS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "MINUTES".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "HOURS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "DAYS".equals(params.timeoutConfirmDeployUnit.toUpperCase()))) {
+                            isTimeoutConfirmDeployUnitValid = true
+                            timeoutConfirmDeployUnit = params.timeoutConfirmDeployUnit.toUpperCase()
+                        }
+                    }
+
+                    echo "timeoutConfirmDeploy value: ${timeoutConfirmDeploy}"
+
+                    if (timeoutConfirmDeploy) {
+                        echo "timeoutConfirmDeployTime value: ${timeoutConfirmDeployTime}"
+                        echo "timeoutConfirmDeployUnit value: ${timeoutConfirmDeployUnit}"
+                    }
+
+
+                    if (timeoutConfirmDeploy && timeoutConfirmDeployTime > 0 && isTimeoutConfirmDeployUnitValid) {
+                        //Wrap input with timeout
+                        timeout(time:timeoutConfirmDeployTime, unit:"${timeoutConfirmDeployUnit}") {
+                            deploy = input message: 'Waiting for user approval',
+                                    parameters: [choice(name: 'Continue and deploy?', choices: 'No\nYes', description: 'Choose "Yes" if you want to deploy this build')]
+                        }
+                    } else {
+                        //Input without timeout
+                        deploy = input message: 'Waiting for user approval',
+                                parameters: [choice(name: 'Continue and deploy?', choices: 'No\nYes', description: 'Choose "Yes" if you want to deploy this build')]
+
+                    }
+                }
+            } catch (err) {
+                def user = err.getCauses()[0].getUser()
+                if('SYSTEM'.equals(user.toString())) { //timeout
+                    currentBuild.result = "FAILED"
+                    throw new hudson.AbortException("Timeout on confirm deploy")
+                }
+            }
+        }
+
+        if (deploy == 'Yes') {
+            node {
+                checkout scm
+                stage('OpenShift Deploy') {
+                    echo "Deploying on OpenShift..."
+
+                    openshift_route_hostname = nodejsOpenshiftDeployProject {
+                        branchHY = branchNameHY
+                        branch_type = branchType
+                    }
+
+                    openshift_route_hostname_with_protocol = utils.getRouteHostnameWithProtocol(openshift_route_hostname, false)
+
+                }
+            }
+
+            echo "Openshift route hostname: ${openshift_route_hostname}"
+            echo "Openshift route hostname (with protocol): ${openshift_route_hostname_with_protocol}"
+
+            echo "params.jenkins.errorOnPostDeployTestsUnstableResult: ${params.jenkins.errorOnPostDeployTestsUnstableResult}"
+            Boolean errorOnPostDeployTestsUnstableResult = false
+
+            if (params.jenkins.errorOnPostDeployTestsUnstableResult != null) {
+                errorOnPostDeployTestsUnstableResult = params.jenkins.errorOnPostDeployTestsUnstableResult.toBoolean()
+            }
+
+            echo "errorOnPostDeployTestsUnstableResult value: ${errorOnPostDeployTestsUnstableResult}"
+
+            def tasks = [:]
+
+            //Smoke tests
+            if (branchType in params.testing.postdeploy.smokeTesting) {
+                tasks["${Constants.SMOKE_TEST_TYPE}"] = {
+                    node('taurus') { //taurus
+                        try {
+                            stage("${Constants.SMOKE_TEST_TYPE} Tests") {
+                                nodejsExecutePerformanceTest {
+                                    pts_taurus_test_base_path = taurus_test_base_path
+                                    pts_acceptance_test_path = smoke_test_path
+                                    pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
+                                    pts_performance_test_type = Constants.SMOKE_TEST_TYPE
+                                }
+                            }
+                        } catch (exc) {
+                            def exc_message = exc.message
+                            echo "${exc_message}"
+                            if (errorOnPostDeployTestsUnstableResult) {
+                                currentBuild.result = Constants.UNSTABLE_BUILD_RESULT
+                            } else {
+                                //Failed status
+                                currentBuild.result = Constants.FAILURE_BUILD_RESULT
+                                throw new hudson.AbortException("The ${Constants.SMOKE_TEST_TYPE} tests stage has failures")
+                            }
+                        }
+                    }
+                }
+            } else {
+                echo "Skipping ${Constants.SMOKE_TEST_TYPE} tests..."
+            }
+
+            //Acceptance tests
+            if (branchType in params.testing.postdeploy.acceptanceTesting) {
+                tasks["${Constants.ACCEPTANCE_TEST_TYPE}"] = {
+                    node('taurus') { //taurus
+                        try {
+                            stage("${Constants.ACCEPTANCE_TEST_TYPE} Tests") {
+                                nodejsExecutePerformanceTest {
+                                    pts_taurus_test_base_path = taurus_test_base_path
+                                    pts_acceptance_test_path = acceptance_test_path
+                                    pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
+                                    pts_performance_test_type = Constants.ACCEPTANCE_TEST_TYPE
+                                }
+                            }
+                        } catch (exc) {
+                            def exc_message = exc.message
+                            echo "${exc_message}"
+                            if (errorOnPostDeployTestsUnstableResult) {
+                                currentBuild.result = Constants.UNSTABLE_BUILD_RESULT
+                            } else {
+                                //Failed status
+                                currentBuild.result = Constants.FAILURE_BUILD_RESULT
+                                throw new hudson.AbortException("The ${Constants.ACCEPTANCE_TEST_TYPE} tests stage has failures")
+                            }
+                        }
+                    }
+                }
+            } else {
+                echo "Skipping ${Constants.ACCEPTANCE_TEST_TYPE} tests..."
+            }
+
+            //Security tests
+            if (branchType in params.testing.postdeploy.securityTesting) {
+                tasks["${Constants.SECURITY_TEST_TYPE}"] = {
+                    node('taurus') { //taurus
+                        try {
+                            stage("${Constants.SECURITY_TEST_TYPE} Tests") {
+                                nodejsExecutePerformanceTest {
+                                    pts_taurus_test_base_path = taurus_test_base_path
+                                    pts_acceptance_test_path = security_test_path
+                                    pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
+                                    pts_performance_test_type = Constants.SECURITY_TEST_TYPE
+                                }
+                            }
+                        } catch (exc) {
+                            def exc_message = exc.message
+                            echo "${exc_message}"
+                            if (errorOnPostDeployTestsUnstableResult) {
+                                currentBuild.result = Constants.UNSTABLE_BUILD_RESULT
+                            } else {
+                                //Failed status
+                                currentBuild.result = Constants.FAILURE_BUILD_RESULT
+                                throw new hudson.AbortException("The ${Constants.SECURITY_TEST_TYPE} tests stage has failures")
+                            }
+                        }
+                    }
+                }
+            } else {
+                echo "Skipping ${Constants.SECURITY_TEST_TYPE} tests..."
+            }
+
+
+            //Executing smoke, acceptance and security tests in parallel
+            parallel tasks
+
+
+            //Performance tests
+            if (branchType in params.testing.postdeploy.performanceTesting) {
+                node('taurus') { //taurus
+                    try {
+                        stage("${Constants.PERFORMANCE_TEST_TYPE} Tests") {
+                            nodejsExecutePerformanceTest {
+                                pts_taurus_test_base_path = taurus_test_base_path
+                                pts_acceptance_test_path = performance_test_path
+                                pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
+                                pts_performance_test_type = Constants.PERFORMANCE_TEST_TYPE
+                            }
+                        }
+                    } catch (exc) {
+                        def exc_message = exc.message
+                        echo "${exc_message}"
+                        if (errorOnPostDeployTestsUnstableResult) {
+                            currentBuild.result = Constants.UNSTABLE_BUILD_RESULT
+                        } else {
+                            //Failed status
+                            currentBuild.result = Constants.FAILURE_BUILD_RESULT
+                            throw new hudson.AbortException("The ${Constants.PERFORMANCE_TEST_TYPE} tests stage has failures")
+                        }
+                    }
+                }
+            } else {
+                echo "Skipping ${Constants.PERFORMANCE_TEST_TYPE} tests..."
+            }
+
+        } else {
+            //User doesn't want to deploy
+            //Failed status
+            currentBuild.result = Constants.FAILURE_BUILD_RESULT
+            throw new hudson.AbortException("The deploy on Openshift hasn't been confirmed")
+        }
+
+
+
+        stage('Notification') {
+            echo "Sending Notifications..."
+
+        }
+
+        stage('Remove old builds') {
+
+            echo "params.maxOldBuildsToKeep: ${params.jenkins.maxOldBuildsToKeep}"
+            echo "params.daysOldBuildsToKeep: ${params.jenkins.daysOldBuildsToKeep}"
+
+            String maxOldBuildsToKeepParam = params.jenkins.maxOldBuildsToKeep
+            String daysOldBuildsToKeepParam = params.jenkins.daysOldBuildsToKeep
+
+            if (maxOldBuildsToKeepParam != null && maxOldBuildsToKeepParam.isInteger()) {
+                maxOldBuildsToKeep = maxOldBuildsToKeepParam as Integer
+            }
+
+            if (daysOldBuildsToKeepParam != null && daysOldBuildsToKeepParam.isInteger()) {
+                daysOldBuildsToKeep = daysOldBuildsToKeepParam as Integer
+            }
+
+            echo "maxOldBuildsToKeep: ${maxOldBuildsToKeep}"
+            echo "daysOldBuildsToKeep: ${daysOldBuildsToKeep}"
+
+            if (maxOldBuildsToKeep > 0 && daysOldBuildsToKeep > 0) {
+
+                echo "Keeping last ${maxOldBuildsToKeep} builds"
+                echo "Keeping builds for  ${daysOldBuildsToKeep} last days"
+
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: "${daysOldBuildsToKeep}", numToKeepStr: "${maxOldBuildsToKeep}"]]]);
+
+            } else if (maxOldBuildsToKeep > 0) {
+
+                echo "Keeping last ${maxOldBuildsToKeep} builds"
+
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: "${maxOldBuildsToKeep}"]]]);
+
+            } else if (daysOldBuildsToKeep > 0) {
+
+                echo "Keeping builds for  ${daysOldBuildsToKeep} last days"
+
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: "${daysOldBuildsToKeep}", numToKeepStr: '']]]);
+
+            } else {
+
+                echo "Not removing old builds."
+
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '']]]);
+
+            }
+
+        }
+
+    }
 
     echo "END NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
 
