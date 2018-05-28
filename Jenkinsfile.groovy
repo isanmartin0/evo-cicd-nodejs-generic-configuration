@@ -1,6 +1,7 @@
 #!/usr/bin/groovy
 import com.evobanco.NodejsUtils
 import com.evobanco.NodejsConstants
+import java.text.SimpleDateFormat
 
 def runNodejsGenericJenkinsfile() {
 
