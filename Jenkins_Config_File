@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+@Library('msa-cicd-jenkins-shared-libs')_
 @Library('msa-cicd-nodejs-jenkins-shared-libs')_
 
 def jenkinsFile
