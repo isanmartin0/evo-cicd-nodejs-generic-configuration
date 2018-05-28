@@ -79,7 +79,7 @@ def runNodejsGenericJenkinsfile() {
 
     def nodeJS_9_installation = "Node-9.5.0"
     def nodeJS_8_installation = "Node-8.9.4"
-    def nodeJS_6_installation = "Node-6.9.4"
+    def nodeJS_6_installation = "Node-6.11.3"
     def nodeJS_pipeline_installation = ""
     int image_stream_nodejs_version = image_stream_nodejs_version_default
 
