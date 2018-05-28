@@ -57,6 +57,7 @@ def runNodejsGenericJenkinsfile() {
     def isScopedPackage
     def packageScope
 
+
     int maxOldBuildsToKeep = 0
     int daysOldBuildsToKeep = 0
 
@@ -431,24 +432,475 @@ def runNodejsGenericJenkinsfile() {
 
             } else {
 
-                stage('Check published package on Artifactory') {
+                if (branchType in params.npmRegistryDeploy) {
+                    stage('Check published package on NPM registry') {
 
-                    //Get the location of the tarball
-                    sh 'tarball_location=$(npm view "${ddd}" dist.tarball)'
+                        try {
+                            echo 'Get tarball location of package ...'
+                            def tarball_script = $/eval "npm view  ${packageTag} dist.tarball | grep '${packageTarball}'"/$
+                            echo "${tarball_script}"
+                            def tarball_view = sh(script: "${tarball_script}", returnStdout: true).toString().trim()
+                            echo "${tarball_view}"
+                        } catch (exc) {
+                            echo 'There is an error on retrieving the tarball location'
+                            def exc_message = exc.message
+                            echo "${exc_message}"
+                            currentBuild.result = "FAILED"
+                            throw new hudson.AbortException("Error checking existence of package on NPM registry")
+                        }
+                    }
+                }
+            }
+
+            stage('OpenShift Build') {
+
+                /********************************************************
+                 ************* SPECIFIC PORT PARAMETERS *****************
+                 ********************************************************/
+                Boolean useSpecificPort = false
+                int port_number = port_default
+                Boolean createPortEnvironmentVariable = false
+                echo "params.ports.useSpecificPort: ${params.ports.useSpecificPort}"
+                echo "params.ports.portNumber: ${params.ports.portNumber}"
+                echo "params.ports.createPortEnvironmentVariable: ${params.ports.createPortEnvironmentVariable}"
 
 
-                    //TODO: Completar check
+                if (params.ports.useSpecificPort) {
+                    useSpecificPort = params.ports.useSpecificPort.toBoolean()
+                }
 
+                String portNumberParam = params.ports.portNumber
+                if (portNumberParam != null && portNumberParam.isInteger() && useSpecificPort) {
+                    port_number = portNumberParam as Integer
+                }
+
+
+                if (params.ports.createPortEnvironmentVariable && useSpecificPort) {
+                    createPortEnvironmentVariable = params.ports.createPortEnvironmentVariable.toBoolean()
+                }
+
+
+                /***************************************************
+                 ************* DEV MODE PARAMETERS *****************
+                 ***************************************************/
+                Boolean devMode = false
+                int debug_port_number = debug_port_default
+                echo "params.devMode: ${params.devMode}"
+                echo "params.debugPort: ${params.debugPort}"
+
+                if (params.devMode) {
+                    devMode = params.devMode.toBoolean()
+                }
+
+                String debugPortParam = params.debugPort
+
+                if (debugPortParam != null && debugPortParam.isInteger() && devMode) {
+                    debug_port_number = debugPortParam as Integer
+                }
+
+
+                /***************************************************
+                 ************* NPM MIRROR PARAMETERS *****************
+                 ***************************************************/
+                Boolean useNpmMirror = false
+                def theNpmMirror = ""
+                echo "params.useNpmMirror: ${params.useNpmMirror}"
+                echo "params.npmMirror: ${params.npmMirror}"
+
+                if (params.useNpmMirror) {
+                    useNpmMirror = params.useNpmMirror.toBoolean()
+                }
+
+                if (useNpmMirror) {
+                    theNpmMirror = params.npmMirror
+                }
+
+
+                /*******************************************************************
+                 ************* NPM RUN ALTERNATE SCRIPT PARAMETERS *****************
+                 *******************************************************************/
+                Boolean useAlternateNpmRun = false
+                def alternateNpmRunScript = ''
+                echo "params.useAlternateNpmRun: ${params.useAlternateNpmRun}"
+                echo "params.alternateNpmRunScript: ${params.alternateNpmRunScript}"
+
+                if (params.useAlternateNpmRun) {
+                    useAlternateNpmRun = params.useAlternateNpmRun.toBoolean()
+                }
+
+                if (useAlternateNpmRun) {
+                    alternateNpmRunScript = params.alternateNpmRunScript
+                }
+
+
+                /*************************************************************
+                 ************* IMAGE STREAM TAG NODE VERSION *****************
+                 *************************************************************/
+                int image_stream_nodejs_version = image_stream_nodejs_version_default
+                echo "params.imageStreamNodejsVersion: ${params.imageStreamNodejsVersion}"
+
+                String imageStreamNodejsVersionParam = params.imageStreamNodejsVersion
+                if (imageStreamNodejsVersionParam != null && imageStreamNodejsVersionParam.isInteger()) {
+                    image_stream_nodejs_version = imageStreamNodejsVersionParam as Integer
+                }
+
+
+                /**********************************************************
+                 ************* OPENSHIFT PROJECT CREATION *****************
+                 **********************************************************/
+
+                echo "Building image on OpenShift..."
+
+                //def my_sourceRepositoryURL = "https://github.com/isanmartin0/nodejs-helloWorld"
+                //def my_sourceRepositoryBranch = "release/1.0.3"
+
+                nodejsOpenshiftCheckAndCreateProject {
+                    oseCredential = openshiftCredential
+                    cloudURL = openshiftURL
+                    environment = envLabel
+                    jenkinsNS = jenkinsNamespace
+                    artCredential = artifactoryCredential
+                    template = openshiftNodejsTemplateGenericPath
+                    branchHY = branchNameHY
+                    branch_type = branchType
+                    dockerRegistry = registry
+                    sourceRepositoryURL = projectURL
+                    sourceRepositoryBranch = branchName
+                    portNumber = port_number
+                    npmMirror = theNpmMirror
+                    nodejsVersion = image_stream_nodejs_version
+                    package_tag = packageTag
+                    package_tarball = packageTarball
+                    is_scoped_package = isScopedPackage
                 }
 
 
 
+                /**************************************************************
+                 ************* ENVIRONMENT VARIABLES CREATION *****************
+                 **************************************************************/
+
+                echo "Creating environment variables"
+
+                retry(3) {
+                    nodejsOpenshiftEnvironmentVariables {
+                        branchHY = branchNameHY
+                        branch_type = branchType
+                        createPortEnvironmentVariableOpenshift = createPortEnvironmentVariable
+                        portNumber = port_number
+                        devModeOpenshift = devMode
+                        debugPortOpenshift = debug_port_number
+                        useNpmMirrorOpenshift = useNpmMirror
+                        npmMirrorOpenshift = theNpmMirror
+                        useAlternateNpmRunOpenshift = useAlternateNpmRun
+                        alternateNpmRunScriptOpenshift = alternateNpmRunScript
+                    }
+
+                    sleep(10)
+                }
+
+
+                nodejsOpenshiftBuildProject {
+                    repoUrl = npmRepositoryURL
+                    branchHY = branchNameHY
+                    branch_type = branchType
+                    package_tag = packageTag
+                    package_tarball = packageTarball
+                    is_scoped_package = isScopedPackage
+                }
             }
 
         }
 
     } // end of node
 
+    if (!isPPCJenkinsFile) {
+        def deploy = 'Yes'
+
+        if (branchType in params.confirmDeploy) {
+            try {
+                stage('Decide on Deploying') {
+
+                    //Parameters timeout deploy answer
+
+                    Boolean timeoutConfirmDeploy = false
+                    int timeoutConfirmDeployTime = 0
+                    String timeoutConfirmDeployUnit = ''
+                    boolean isTimeoutConfirmDeployUnitValid = false
+
+                    echo "params.timeoutConfirmDeploy: ${params.timeoutConfirmDeploy}"
+
+                    if (params.timeoutConfirmDeploy != null) {
+                        timeoutConfirmDeploy = params.timeoutConfirmDeploy.toBoolean()
+                    }
+
+                    if (timeoutConfirmDeploy) {
+                        echo "params.timeoutConfirmDeployTime: ${params.timeoutConfirmDeployTime}"
+                        echo "params.timeoutConfirmDeployUnit: ${params.timeoutConfirmDeployUnit}"
+
+                        String timeoutConfirmDeployTimeParam = params.timeoutConfirmDeployTime
+                        if (timeoutConfirmDeployTimeParam != null && timeoutConfirmDeployTimeParam.isInteger()) {
+                            timeoutConfirmDeployTime = timeoutConfirmDeployTimeParam as Integer
+                        }
+
+                        if (params.timeoutConfirmDeployUnit != null && ("NANOSECONDS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "MICROSECONDS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "MILLISECONDS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "SECONDS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "MINUTES".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "HOURS".equals(params.timeoutConfirmDeployUnit.toUpperCase())
+                                || "DAYS".equals(params.timeoutConfirmDeployUnit.toUpperCase()))) {
+                            isTimeoutConfirmDeployUnitValid = true
+                            timeoutConfirmDeployUnit = params.timeoutConfirmDeployUnit.toUpperCase()
+                        }
+                    }
+
+                    echo "timeoutConfirmDeploy value: ${timeoutConfirmDeploy}"
+
+                    if (timeoutConfirmDeploy) {
+                        echo "timeoutConfirmDeployTime value: ${timeoutConfirmDeployTime}"
+                        echo "timeoutConfirmDeployUnit value: ${timeoutConfirmDeployUnit}"
+                    }
+
+
+                    if (timeoutConfirmDeploy && timeoutConfirmDeployTime > 0 && isTimeoutConfirmDeployUnitValid) {
+                        //Wrap input with timeout
+                        timeout(time:timeoutConfirmDeployTime, unit:"${timeoutConfirmDeployUnit}") {
+                            deploy = input message: 'Waiting for user approval',
+                                    parameters: [choice(name: 'Continue and deploy?', choices: 'No\nYes', description: 'Choose "Yes" if you want to deploy this build')]
+                        }
+                    } else {
+                        //Input without timeout
+                        deploy = input message: 'Waiting for user approval',
+                                parameters: [choice(name: 'Continue and deploy?', choices: 'No\nYes', description: 'Choose "Yes" if you want to deploy this build')]
+
+                    }
+                }
+            } catch (err) {
+                def user = err.getCauses()[0].getUser()
+                if('SYSTEM'.equals(user.toString())) { //timeout
+                    currentBuild.result = "FAILED"
+                    throw new hudson.AbortException("Timeout on confirm deploy")
+                }
+            }
+        }
+
+        if (deploy == 'Yes') {
+            node {
+                checkout scm
+                stage('OpenShift Deploy') {
+                    echo "Deploying on OpenShift..."
+
+                    openshift_route_hostname = openshiftDeployProject {
+                        branchHY = branchNameHY
+                        branch_type = branchType
+                    }
+
+                    openshift_route_hostname_with_protocol = utils.getRouteHostnameWithProtocol(openshift_route_hostname, false)
+
+                }
+            }
+
+            echo "Openshift route hostname: ${openshift_route_hostname}"
+            echo "Openshift route hostname (with protocol): ${openshift_route_hostname_with_protocol}"
+
+            echo "params.jenkins.errorOnPostDeployTestsUnstableResult: ${params.jenkins.errorOnPostDeployTestsUnstableResult}"
+            Boolean errorOnPostDeployTestsUnstableResult = false
+
+            if (params.jenkins.errorOnPostDeployTestsUnstableResult != null) {
+                errorOnPostDeployTestsUnstableResult = params.jenkins.errorOnPostDeployTestsUnstableResult.toBoolean()
+            }
+
+            echo "errorOnPostDeployTestsUnstableResult value: ${errorOnPostDeployTestsUnstableResult}"
+
+            def tasks = [:]
+
+            //Smoke tests
+            if (branchType in params.testing.postdeploy.smokeTesting) {
+                tasks["${Constants.SMOKE_TEST_TYPE}"] = {
+                    node('taurus') { //taurus
+                        try {
+                            stage("${Constants.SMOKE_TEST_TYPE} Tests") {
+                                executePerformanceTest {
+                                    pts_taurus_test_base_path = taurus_test_base_path
+                                    pts_acceptance_test_path = smoke_test_path
+                                    pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
+                                    pts_performance_test_type = Constants.SMOKE_TEST_TYPE
+                                }
+                            }
+                        } catch (exc) {
+                            def exc_message = exc.message
+                            echo "${exc_message}"
+                            if (errorOnPostDeployTestsUnstableResult) {
+                                currentBuild.result = Constants.UNSTABLE_BUILD_RESULT
+                            } else {
+                                //Failed status
+                                currentBuild.result = Constants.FAILURE_BUILD_RESULT
+                                throw new hudson.AbortException("The ${Constants.SMOKE_TEST_TYPE} tests stage has failures")
+                            }
+                        }
+                    }
+                }
+            } else {
+                echo "Skipping ${Constants.SMOKE_TEST_TYPE} tests..."
+            }
+
+            //Acceptance tests
+            if (branchType in params.testing.postdeploy.acceptanceTesting) {
+                tasks["${Constants.ACCEPTANCE_TEST_TYPE}"] = {
+                    node('taurus') { //taurus
+                        try {
+                            stage("${Constants.ACCEPTANCE_TEST_TYPE} Tests") {
+                                executePerformanceTest {
+                                    pts_taurus_test_base_path = taurus_test_base_path
+                                    pts_acceptance_test_path = acceptance_test_path
+                                    pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
+                                    pts_performance_test_type = Constants.ACCEPTANCE_TEST_TYPE
+                                }
+                            }
+                        } catch (exc) {
+                            def exc_message = exc.message
+                            echo "${exc_message}"
+                            if (errorOnPostDeployTestsUnstableResult) {
+                                currentBuild.result = Constants.UNSTABLE_BUILD_RESULT
+                            } else {
+                                //Failed status
+                                currentBuild.result = Constants.FAILURE_BUILD_RESULT
+                                throw new hudson.AbortException("The ${Constants.ACCEPTANCE_TEST_TYPE} tests stage has failures")
+                            }
+                        }
+                    }
+                }
+            } else {
+                echo "Skipping ${Constants.ACCEPTANCE_TEST_TYPE} tests..."
+            }
+
+            //Security tests
+            if (branchType in params.testing.postdeploy.securityTesting) {
+                tasks["${Constants.SECURITY_TEST_TYPE}"] = {
+                    node('taurus') { //taurus
+                        try {
+                            stage("${Constants.SECURITY_TEST_TYPE} Tests") {
+                                executePerformanceTest {
+                                    pts_taurus_test_base_path = taurus_test_base_path
+                                    pts_acceptance_test_path = security_test_path
+                                    pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
+                                    pts_performance_test_type = Constants.SECURITY_TEST_TYPE
+                                }
+                            }
+                        } catch (exc) {
+                            def exc_message = exc.message
+                            echo "${exc_message}"
+                            if (errorOnPostDeployTestsUnstableResult) {
+                                currentBuild.result = Constants.UNSTABLE_BUILD_RESULT
+                            } else {
+                                //Failed status
+                                currentBuild.result = Constants.FAILURE_BUILD_RESULT
+                                throw new hudson.AbortException("The ${Constants.SECURITY_TEST_TYPE} tests stage has failures")
+                            }
+                        }
+                    }
+                }
+            } else {
+                echo "Skipping ${Constants.SECURITY_TEST_TYPE} tests..."
+            }
+
+
+            //Executing smoke, acceptance and security tests in parallel
+            parallel tasks
+
+
+            //Performance tests
+            if (branchType in params.testing.postdeploy.performanceTesting) {
+                node('taurus') { //taurus
+                    try {
+                        stage("${Constants.PERFORMANCE_TEST_TYPE} Tests") {
+                            executePerformanceTest {
+                                pts_taurus_test_base_path = taurus_test_base_path
+                                pts_acceptance_test_path = performance_test_path
+                                pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
+                                pts_performance_test_type = Constants.PERFORMANCE_TEST_TYPE
+                            }
+                        }
+                    } catch (exc) {
+                        def exc_message = exc.message
+                        echo "${exc_message}"
+                        if (errorOnPostDeployTestsUnstableResult) {
+                            currentBuild.result = Constants.UNSTABLE_BUILD_RESULT
+                        } else {
+                            //Failed status
+                            currentBuild.result = Constants.FAILURE_BUILD_RESULT
+                            throw new hudson.AbortException("The ${Constants.PERFORMANCE_TEST_TYPE} tests stage has failures")
+                        }
+                    }
+                }
+            } else {
+                echo "Skipping ${Constants.PERFORMANCE_TEST_TYPE} tests..."
+            }
+
+        } else {
+            //User doesn't want to deploy
+            //Failed status
+            currentBuild.result = Constants.FAILURE_BUILD_RESULT
+            throw new hudson.AbortException("The deploy on Openshift hasn't been confirmed")
+        }
+
+
+
+        stage('Notification') {
+            echo "Sending Notifications..."
+
+        }
+
+        stage('Remove old builds') {
+
+            echo "params.maxOldBuildsToKeep: ${params.jenkins.maxOldBuildsToKeep}"
+            echo "params.daysOldBuildsToKeep: ${params.jenkins.daysOldBuildsToKeep}"
+
+            String maxOldBuildsToKeepParam = params.jenkins.maxOldBuildsToKeep
+            String daysOldBuildsToKeepParam = params.jenkins.daysOldBuildsToKeep
+
+            if (maxOldBuildsToKeepParam != null && maxOldBuildsToKeepParam.isInteger()) {
+                maxOldBuildsToKeep = maxOldBuildsToKeepParam as Integer
+            }
+
+            if (daysOldBuildsToKeepParam != null && daysOldBuildsToKeepParam.isInteger()) {
+                daysOldBuildsToKeep = daysOldBuildsToKeepParam as Integer
+            }
+
+            echo "maxOldBuildsToKeep: ${maxOldBuildsToKeep}"
+            echo "daysOldBuildsToKeep: ${daysOldBuildsToKeep}"
+
+            if (maxOldBuildsToKeep > 0 && daysOldBuildsToKeep > 0) {
+
+                echo "Keeping last ${maxOldBuildsToKeep} builds"
+                echo "Keeping builds for  ${daysOldBuildsToKeep} last days"
+
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: "${daysOldBuildsToKeep}", numToKeepStr: "${maxOldBuildsToKeep}"]]]);
+
+            } else if (maxOldBuildsToKeep > 0) {
+
+                echo "Keeping last ${maxOldBuildsToKeep} builds"
+
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: "${maxOldBuildsToKeep}"]]]);
+
+            } else if (daysOldBuildsToKeep > 0) {
+
+                echo "Keeping builds for  ${daysOldBuildsToKeep} last days"
+
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: "${daysOldBuildsToKeep}", numToKeepStr: '']]]);
+
+            } else {
+
+                echo "Not removing old builds."
+
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '']]]);
+
+            }
+
+        }
+
+    }
 
     echo "END NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
 
