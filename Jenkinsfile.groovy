@@ -166,7 +166,7 @@ def runNodejsGenericJenkinsfile() {
                 }
 
                 // Openshift template (template.yaml)
-                isPPCOpenshiftTemplate = fileExists openshiftTemplatePathPPC
+                isPPCOpenshiftTemplate = fileExists openshiftNodejsTemplatePathPPC
 
                 if (isPPCOpenshiftTemplate) {
                     echo "Node.js Parallel configuration project Openshift template... FOUND"
@@ -691,7 +691,7 @@ def runNodejsGenericJenkinsfile() {
                 stage('OpenShift Deploy') {
                     echo "Deploying on OpenShift..."
 
-                    openshift_route_hostname = openshiftDeployProject {
+                    openshift_route_hostname = nodejsOpenshiftDeployProject {
                         branchHY = branchNameHY
                         branch_type = branchType
                     }
@@ -721,7 +721,7 @@ def runNodejsGenericJenkinsfile() {
                     node('taurus') { //taurus
                         try {
                             stage("${Constants.SMOKE_TEST_TYPE} Tests") {
-                                executePerformanceTest {
+                                nodejsExecutePerformanceTest {
                                     pts_taurus_test_base_path = taurus_test_base_path
                                     pts_acceptance_test_path = smoke_test_path
                                     pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
@@ -751,7 +751,7 @@ def runNodejsGenericJenkinsfile() {
                     node('taurus') { //taurus
                         try {
                             stage("${Constants.ACCEPTANCE_TEST_TYPE} Tests") {
-                                executePerformanceTest {
+                                nodejsExecutePerformanceTest {
                                     pts_taurus_test_base_path = taurus_test_base_path
                                     pts_acceptance_test_path = acceptance_test_path
                                     pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
@@ -781,7 +781,7 @@ def runNodejsGenericJenkinsfile() {
                     node('taurus') { //taurus
                         try {
                             stage("${Constants.SECURITY_TEST_TYPE} Tests") {
-                                executePerformanceTest {
+                                nodejsExecutePerformanceTest {
                                     pts_taurus_test_base_path = taurus_test_base_path
                                     pts_acceptance_test_path = security_test_path
                                     pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
@@ -815,7 +815,7 @@ def runNodejsGenericJenkinsfile() {
                 node('taurus') { //taurus
                     try {
                         stage("${Constants.PERFORMANCE_TEST_TYPE} Tests") {
-                            executePerformanceTest {
+                            nodejsExecutePerformanceTest {
                                 pts_taurus_test_base_path = taurus_test_base_path
                                 pts_acceptance_test_path = performance_test_path
                                 pts_openshift_route_hostname_with_protocol = openshift_route_hostname_with_protocol
