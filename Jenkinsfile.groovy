@@ -225,23 +225,7 @@ def runNodejsGenericJenkinsfile() {
                     echo "params.openshift.templatePath: ${params.openshift.templatePath}"
 
                 } else {
-                    //The Node.js generic pipeline will use Node.js generic Jenkins.yml or Node.js generic Openshift template
-                    //We need load this elements
 
-                    echo "Node.js generic configuration project loading"
-
-                    retry (3) {
-                        checkout([$class                           : 'GitSCM',
-                                  branches                         : [[name: branchGenericPGC]],
-                                  doGenerateSubmoduleConfigurations: false,
-                                  extensions                       : [[$class           : 'RelativeTargetDirectory',
-                                                                       relativeTargetDir: relativeTargetDirGenericPGC]],
-                                  submoduleCfg                     : [],
-                                  userRemoteConfigs                : [[credentialsId: credentialsIdGenericPGC,
-                                                                       url          : gitDefaultProjectConfigurationPath]]])
-                    }
-
-                    echo "Node.js generic configuration project loaded"
 
 
 
