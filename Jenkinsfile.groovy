@@ -34,7 +34,7 @@ def runNodejsGenericJenkinsfile() {
     def isPPCOpenshiftTemplate = false
     def jenkinsFilePathPPC = relativeTargetDirPPC + 'Jenkinsfile'
     def jenkinsYamlPathPPC = relativeTargetDirPPC + 'Jenkins.yml'
-    def openshiftNodejsTemplatePathPPC = relativeTargetDirPPC + 'kube/Nodejs_template.yaml'
+    def openshiftNodejsTemplatePathPPC = relativeTargetDirPPC + 'kube/nodejs_template.yaml'
     def jenknsFilePipelinePPC
 
 
@@ -290,7 +290,7 @@ def runNodejsGenericJenkinsfile() {
             stage('Prepare') {
                 echo "Prepare stage (PGC)"
 
-                setDisplayName()
+                nodejsSetDisplayName()
 
                 echo "${currentBuild.displayName}"
 
