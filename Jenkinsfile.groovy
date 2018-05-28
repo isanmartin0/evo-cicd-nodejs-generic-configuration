@@ -270,8 +270,8 @@ def runNodejsGenericJenkinsfile() {
 
             stage('Node initialize') {
                 echo 'Initializing...'
-                def node_version = 'Node-9.5.0'
-                def node = tool name: '${node_version}', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                def node_version = "Node-9.5.0"
+                def node = tool name: "${node_version}", type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
                 env.PATH = "${node}/bin:${env.PATH}"
 
                 sh "node -v"
