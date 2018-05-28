@@ -91,6 +91,7 @@ def runNodejsGenericJenkinsfile() {
     node('nodejs') {
 
         echo 'Pipeline begin timestamp... '
+        sh 'SECONDS=0'
         sh 'date'
 
         stage('Checkout') {
@@ -99,6 +100,9 @@ def runNodejsGenericJenkinsfile() {
             projectURL = scm.userRemoteConfigs[0].url
             echo "Source code hosted in: ${projectURL}"
         }
+
+        sh 'duration=$SECONDS'
+        sh "echo $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed."
 
 
         try {
@@ -925,6 +929,7 @@ def runNodejsGenericJenkinsfile() {
         node {
             echo 'Pipeline end timestamp... '
             sh 'date'
+
         }
 
     }
