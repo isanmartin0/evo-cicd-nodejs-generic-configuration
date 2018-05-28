@@ -91,8 +91,8 @@ def runNodejsGenericJenkinsfile() {
     node('nodejs') {
 
         echo 'Pipeline begin timestamp... '
-        sh 'SECONDS=0'
-        sh 'date'
+        def current = new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSSZ').parse(currenttime.trim())
+        echo "${current}"
 
         stage('Checkout') {
             echo 'Getting source code...'
