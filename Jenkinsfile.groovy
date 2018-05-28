@@ -90,7 +90,7 @@ def runNodejsGenericJenkinsfile() {
 
     node('nodejs') {
 
-        echo 'Pipeline timestamp... '
+        echo 'Pipeline begin timestamp... '
         sh 'date'
 
         stage('Checkout') {
@@ -919,6 +919,12 @@ def runNodejsGenericJenkinsfile() {
 
             }
 
+        }
+
+
+        node {
+            echo 'Pipeline end timestamp... '
+            sh 'date'
         }
 
     }
