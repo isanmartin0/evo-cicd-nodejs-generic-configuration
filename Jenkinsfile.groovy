@@ -90,6 +90,8 @@ def runNodejsGenericJenkinsfile() {
     node('nodejs') {
 
         stage('Checkout') {
+            echo 'Pipeline timestamp...'
+            echo ${date}
             echo 'Getting source code...'
             checkout scm
             projectURL = scm.userRemoteConfigs[0].url
