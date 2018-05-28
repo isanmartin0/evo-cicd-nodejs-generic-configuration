@@ -86,10 +86,12 @@ def runNodejsGenericJenkinsfile() {
     def NPM_TOKEN_CREDENTIALS = "2631fdfc-50c2-458a-b257-8571a4038b38"
 
     echo "BEGIN NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
-    echo 'Pipeline timestamp... '
-    sh 'date'
+
 
     node('nodejs') {
+
+        echo 'Pipeline timestamp... '
+        sh 'date'
 
         stage('Checkout') {
             echo 'Getting source code...'
