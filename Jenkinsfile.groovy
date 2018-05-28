@@ -93,9 +93,9 @@ def runNodejsGenericJenkinsfile() {
     node('nodejs') {
 
         echo 'Pipeline begin timestamp... '
+        sh 'date'
 
-
-        echo "${currentBuild.durationString}"
+        echo "${currentBuild.durationString.replace(' and counting', '')}"
 
 
         stage('Checkout') {
