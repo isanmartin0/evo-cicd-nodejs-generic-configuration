@@ -77,6 +77,11 @@ def runNodejsGenericJenkinsfile() {
     def build_from_registry_url = 'https://github.com/isanmartin0/s2i-nodejs-container.git'
     def build_from_artifact_branch = 'master'
 
+    def nodeJS_9_installation = "Node-9.5.0"
+    def nodeJS_8_installation = "Node-8.9.4"
+    def nodeJS_6_installation = "Node-6.9.4"
+    def nodeJS_pipeline_installation = ""
+
     echo "BEGIN NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
 
     node('nodejs') {
@@ -269,17 +274,34 @@ def runNodejsGenericJenkinsfile() {
             }
 
             stage('Node initialize') {
-                echo 'Initializing...'
-                def node_version = "Node-9.5.0"
-                def node = tool name: "${node_version}", type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                echo 'Node initializing...'
+
+                /*************************************************************
+                 ************* IMAGE STREAM TAG NODE VERSION *****************
+                 *************************************************************/
+                int image_stream_nodejs_version = image_stream_nodejs_version_default
+                echo "params.imageStreamNodejsVersion: ${params.imageStreamNodejsVersion}"
+
+                String imageStreamNodejsVersionParam = params.imageStreamNodejsVersion
+                if (imageStreamNodejsVersionParam != null && imageStreamNodejsVersionParam.isInteger()) {
+                    image_stream_nodejs_version = imageStreamNodejsVersionParam as Integer
+                }
+
+                if (image_stream_nodejs_version >= 8) {
+                    echo "Assigning NodeJS installation ${nodeJS_8_installation}"
+                    nodeJS_pipeline_installation = nodeJS_8_installation
+                } else if (image_stream_nodejs_version >= 6) {
+                    echo "Assigning NodeJS installation ${nodeJS_6_installation}"
+                    nodeJS_pipeline_installation = nodeJS_6_installation
+                } else {
+                    currentBuild.result = "FAILED"
+                    throw new hudson.AbortException("Error checking existence of package on NPM registry")
+                }
+
+                def node = tool name: "${nodeJS_pipeline_installation}", type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
                 env.PATH = "${node}/bin:${env.PATH}"
 
                 sh "node -v"
-
-                currentBuild.result = "FAILED"
-                throw new hudson.AbortException("Error checking existence of package on NPM registry")
-
-
             }
 
             stage('TEST npm whoami') {
@@ -532,18 +554,6 @@ def runNodejsGenericJenkinsfile() {
 
                 if (useAlternateNpmRun) {
                     alternateNpmRunScript = params.alternateNpmRunScript
-                }
-
-
-                /*************************************************************
-                 ************* IMAGE STREAM TAG NODE VERSION *****************
-                 *************************************************************/
-                int image_stream_nodejs_version = image_stream_nodejs_version_default
-                echo "params.imageStreamNodejsVersion: ${params.imageStreamNodejsVersion}"
-
-                String imageStreamNodejsVersionParam = params.imageStreamNodejsVersion
-                if (imageStreamNodejsVersionParam != null && imageStreamNodejsVersionParam.isInteger()) {
-                    image_stream_nodejs_version = imageStreamNodejsVersionParam as Integer
                 }
 
 
