@@ -95,17 +95,12 @@ def runNodejsGenericJenkinsfile() {
         echo 'Pipeline begin timestamp... '
         sh 'date'
 
-        echo "Current build duration: ${currentBuild.durationString.replace(' and counting', '')}"
-
-
         stage('Checkout') {
             echo 'Getting source code...'
             checkout scm
             projectURL = scm.userRemoteConfigs[0].url
             echo "Source code hosted in: ${projectURL}"
         }
-
-
 
 
         try {
@@ -934,18 +929,20 @@ def runNodejsGenericJenkinsfile() {
 
         }
 
+    }
 
-        node {
-            echo 'Pipeline end timestamp... '
-            sh 'date'
+    node {
 
-            echo "Current build duration: ${currentBuild.durationString.replace(' and counting', '')}"
+        echo "END NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
 
-        }
+        echo 'Pipeline end timestamp... '
+        sh 'date'
+
+        echo "Current build duration: ${currentBuild.durationString.replace(' and counting', '')}"
 
     }
 
-    echo "END NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
+
 
 } //end of method
 
