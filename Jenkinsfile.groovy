@@ -305,8 +305,10 @@ def runNodejsGenericJenkinsfile() {
             }
 
             stage('TEST npm whoami') {
-                withNPM(npmrcConfig: 'my-custom-npmrc') {
-                    sh 'npm whoami'
+                withEnv(['NPM_TOKEN=2631fdfc-50c2-458a-b257-8571a4038b38']) {
+                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                        sh 'npm whoami'
+                    }
                 }
             }
 
