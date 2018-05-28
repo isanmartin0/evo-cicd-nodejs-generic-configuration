@@ -101,8 +101,8 @@ def runNodejsGenericJenkinsfile() {
             echo "Source code hosted in: ${projectURL}"
         }
 
-        sh 'duration=$SECONDS'
-        sh "echo $(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed."
+        sh "duration=$SECONDS"
+
 
 
         try {
