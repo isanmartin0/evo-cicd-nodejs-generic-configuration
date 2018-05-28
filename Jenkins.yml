@@ -38,10 +38,6 @@ testing:
       # - develop
       # - release
       # - hotfix
-    checkstyle:
-      # - feature
-      # - develop
-      # - release
 
   postdeploy:
     smokeTesting:
