@@ -308,7 +308,7 @@ def runNodejsGenericJenkinsfile() {
 
             stage('TEST npm whoami') {
                 withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                    sh 'echo "NPM_TOKEN  is: $NPM_TOKEN"'
+                    echo "NPM_TOKEN  is: $NPM_TOKEN"
                     withNPM(npmrcConfig: 'my-custom-npmrc') {
                         sh 'npm whoami'
                     }
