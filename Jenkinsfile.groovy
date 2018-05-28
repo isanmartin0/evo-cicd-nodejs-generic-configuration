@@ -81,6 +81,7 @@ def runNodejsGenericJenkinsfile() {
     def nodeJS_8_installation = "Node-8.9.4"
     def nodeJS_6_installation = "Node-6.9.4"
     def nodeJS_pipeline_installation = ""
+    int image_stream_nodejs_version = image_stream_nodejs_version_default
 
     echo "BEGIN NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
 
@@ -279,7 +280,6 @@ def runNodejsGenericJenkinsfile() {
                 /*************************************************************
                  ************* IMAGE STREAM TAG NODE VERSION *****************
                  *************************************************************/
-                int image_stream_nodejs_version = image_stream_nodejs_version_default
                 echo "params.imageStreamNodejsVersion: ${params.imageStreamNodejsVersion}"
 
                 String imageStreamNodejsVersionParam = params.imageStreamNodejsVersion
