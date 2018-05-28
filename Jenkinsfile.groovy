@@ -93,8 +93,6 @@ def runNodejsGenericJenkinsfile() {
     node('nodejs') {
 
         echo 'Pipeline begin timestamp... '
-        def begin_date = new Date()
-        def current = new SimpleDateFormat('yyyy-MM-dd HH:mm:ss.SSSZ').parse(begin_date.trim())
 
 
         echo "${currentBuild.durationString}"
