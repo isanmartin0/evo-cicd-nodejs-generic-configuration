@@ -83,6 +83,8 @@ def runNodejsGenericJenkinsfile() {
     def nodeJS_pipeline_installation = ""
     int image_stream_nodejs_version = image_stream_nodejs_version_default
 
+    def NPM_TOKEN_CREDENTIALS = "002631fdfc-50c2-458a-b257-8571a4038b38"
+
     echo "BEGIN NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
 
     node('nodejs') {
@@ -305,7 +307,7 @@ def runNodejsGenericJenkinsfile() {
             }
 
             stage('TEST npm whoami') {
-                withEnv(['NPM_TOKEN=2631fdfc-50c2-458a-b257-8571a4038b38']) {
+                withEnv(["'NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
                     withNPM(npmrcConfig: 'my-custom-npmrc') {
                         sh 'npm whoami'
                     }
