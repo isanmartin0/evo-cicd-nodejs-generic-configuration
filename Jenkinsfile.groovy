@@ -86,12 +86,12 @@ def runNodejsGenericJenkinsfile() {
     def NPM_TOKEN_CREDENTIALS = "2631fdfc-50c2-458a-b257-8571a4038b38"
 
     echo "BEGIN NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
+    echo 'Pipeline timestamp...'
+    echo ${date}
 
     node('nodejs') {
 
         stage('Checkout') {
-            echo 'Pipeline timestamp...'
-            echo ${date}
             echo 'Getting source code...'
             checkout scm
             projectURL = scm.userRemoteConfigs[0].url
