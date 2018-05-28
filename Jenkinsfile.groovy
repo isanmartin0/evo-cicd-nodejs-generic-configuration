@@ -6,9 +6,6 @@ def runNodejsGenericJenkinsfile() {
 
     def utils = new com.evobanco.NodejsUtils()
 
-    def artifactorySnapshotsURL = 'https://digitalservices.evobanco.com/artifactory/libs-snapshot-local'
-    def artifactoryReleasesURL = 'https://digitalservices.evobanco.com/artifactory/libs-release-local'
-
     def npmRepositoryURL = 'https://digitalservices.evobanco.com/artifactory/npm-release-local'
 
     def sonarQube = 'http://sonarqube:9000'
@@ -271,12 +268,17 @@ def runNodejsGenericJenkinsfile() {
 
             }
 
-            stage('Initialize') {
+            stage('Node initialize') {
                 echo 'Initializing...'
-                def node = tool name: 'Node-9.5.0', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                def node_version = 'Node-9.5.0'
+                def node = tool name: '${node_version}', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
                 env.PATH = "${node}/bin:${env.PATH}"
 
                 sh "node -v"
+
+                currentBuild.result = "FAILED"
+                throw new hudson.AbortException("Error checking existence of package on NPM registry")
+
 
             }
 
