@@ -472,9 +472,6 @@ def runNodejsGenericJenkinsfile() {
                 }
 
 
-                currentBuild.result = NodejsConstants.SUCCESS_BUILD_RESULT
-                return
-
                 if (branchType in params.npmRegistryDeploy) {
 
                     stage('Artifact Registry Publish') {
