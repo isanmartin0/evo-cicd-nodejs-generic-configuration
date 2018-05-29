@@ -6,7 +6,7 @@ import java.util.Date
 
 def runNodejsGenericJenkinsfile() {
 
-    def utils = new com.evobanco.NodejsUtils()
+    utils = new NodejsUtils()
 
     def npmRepositoryURL = 'https://digitalservices.evobanco.com/artifactory/npm-release-local'
 
@@ -17,16 +17,16 @@ def runNodejsGenericJenkinsfile() {
     def artifactoryCredential = 'artifactory-token'
     def jenkinsNamespace = 'cicd'
     def params
-    def envLabel
-    def branchName
-    def branchNameHY
-    def branchType
+    String envLabel
+    String branchName
+    String branchNameHY
+    String branchType
 
 
     //Parallel project configuration (PPC) properties
     def branchPPC = 'master'
-    def credentialsIdPPCDefault = '4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials of the parallel configuration project
-    def credentialsIdPPC
+    String credentialsIdPPCDefault = '4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials of the parallel configuration project
+    String credentialsIdPPC
     def relativeTargetDirPPC = '/tmp/configs/PPC/'
     def isPPCJenkinsFile = false
     def isPPCJenkinsYaml = false
@@ -47,14 +47,14 @@ def runNodejsGenericJenkinsfile() {
     def isGenericJenkinsYaml = false
 
 
-    def packageJSON
-    def projectURL
-    def packageName
-    def packageVersion
-    def packageTag
-    def packageTarball
-    def isScopedPackage
-    def packageScope
+    String packageJSON
+    String projectURL
+    String packageName
+    String packageVersion
+    String packageTag
+    String packageTarball
+    String isScopedPackage
+    String packageScope
 
 
     int maxOldBuildsToKeep = 0
@@ -79,7 +79,6 @@ def runNodejsGenericJenkinsfile() {
     def build_from_registry_url = 'https://github.com/isanmartin0/s2i-nodejs-container.git'
     def build_from_artifact_branch = 'master'
 
-    def nodeJS_9_installation = "Node-9.5.0"
     def nodeJS_8_installation = "Node-8.9.4"
     def nodeJS_6_installation = "Node-6.11.3"
     def nodeJS_pipeline_installation = ""
@@ -428,9 +427,9 @@ def runNodejsGenericJenkinsfile() {
                         sh "sed -i -e 's/{sonarProjectNamePlaceholder}/${sonar_project_name}/g' sonar-project.properties"
 
                         // requires SonarQube Scanner 3.1+
-                        def scannerHome = tool 'SonarQube Scanner 3.1.0';
+                        def scannerHome = tool 'SonarQube Scanner 3.1.0'
                         withSonarQubeEnv('sonarqube') {
-                            sh "${scannerHome}/bin/sonar-scanner -X"
+                            //sh "${scannerHome}/bin/sonar-scanner -X"
                         }
                     }
 
@@ -478,7 +477,7 @@ def runNodejsGenericJenkinsfile() {
 
                         try {
                             echo 'Get tarball location of package ...'
-                            def tarball_script = $/eval "npm view  ${packageTag} dist.tarball | grep '${packageTarball}'"/$
+                            tarball_script = $/eval "npm view  ${packageTag} dist.tarball | grep '${packageTarball}'"/$
                             echo "${tarball_script}"
                             def tarball_view = sh(script: "${tarball_script}", returnStdout: true).toString().trim()
                             echo "${tarball_view}"
@@ -905,25 +904,25 @@ def runNodejsGenericJenkinsfile() {
                 echo "Keeping last ${maxOldBuildsToKeep} builds"
                 echo "Keeping builds for  ${daysOldBuildsToKeep} last days"
 
-                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: "${daysOldBuildsToKeep}", numToKeepStr: "${maxOldBuildsToKeep}"]]]);
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: "${daysOldBuildsToKeep}", numToKeepStr: "${maxOldBuildsToKeep}"]]])
 
             } else if (maxOldBuildsToKeep > 0) {
 
                 echo "Keeping last ${maxOldBuildsToKeep} builds"
 
-                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: "${maxOldBuildsToKeep}"]]]);
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: "${maxOldBuildsToKeep}"]]])
 
             } else if (daysOldBuildsToKeep > 0) {
 
                 echo "Keeping builds for  ${daysOldBuildsToKeep} last days"
 
-                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: "${daysOldBuildsToKeep}", numToKeepStr: '']]]);
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: "${daysOldBuildsToKeep}", numToKeepStr: '']]])
 
             } else {
 
                 echo "Not removing old builds."
 
-                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '']]]);
+                properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '']]])
 
             }
 
@@ -946,5 +945,5 @@ def runNodejsGenericJenkinsfile() {
 
 } //end of method
 
-return this;
+return this
 
