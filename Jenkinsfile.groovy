@@ -53,7 +53,7 @@ def runNodejsGenericJenkinsfile() {
     String packageVersion
     String packageTag
     String packageTarball
-    String isScopedPackage
+    boolean isScopedPackage = false
     String packageScope
 
 
