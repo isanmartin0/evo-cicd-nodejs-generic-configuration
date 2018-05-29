@@ -309,7 +309,11 @@ def runNodejsGenericJenkinsfile() {
                 def node = tool name: "${nodeJS_pipeline_installation}", type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
                 env.PATH = "${node}/bin:${env.PATH}"
 
+                echo 'Node version:'
                 sh "node -v"
+
+                echo 'NPM version:'
+                sh "npm -v"
             }
 
             stage('TEST npm whoami') {
