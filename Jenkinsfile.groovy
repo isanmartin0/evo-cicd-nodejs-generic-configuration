@@ -394,17 +394,6 @@ def runNodejsGenericJenkinsfile() {
                             }
                         }
 
-/*
-                        echo 'Publishing Test Coverage...'
-                        		publishHTML (target: [
-                        			allowMissing: false,
-                        			alwaysLinkToLastBuild: false,
-                        			keepAll: true,
-                        			reportDir: 'coverage/lcov-report',
-                        			reportFiles: 'index.html',
-                        			reportName: "Application Test Coverage"
-                        		])
-*/
                     }
                 } else {
                     echo "Skipping unit tests..."
@@ -430,6 +419,10 @@ def runNodejsGenericJenkinsfile() {
                         def scannerHome = tool 'SonarQube Scanner 3.1.0'
                         withSonarQubeEnv('sonarqube') {
                             //sh "${scannerHome}/bin/sonar-scanner -X"
+                        }
+
+                        withSonarQubeEnv('sonarqube') {
+                            sh "${scannerHome}/bin/sonar-scanner -X -Dsonar.projectKey=aaaaaaaaaa -Dsonar.projectName=aaaaaaaaaa"
                         }
                     }
 
