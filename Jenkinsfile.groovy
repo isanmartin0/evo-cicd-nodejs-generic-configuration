@@ -47,7 +47,7 @@ def runNodejsGenericJenkinsfile() {
     def isGenericJenkinsYaml = false
 
 
-    String packageJSON
+    def packageJSON
     String projectURL
     String packageName
     String packageVersion
