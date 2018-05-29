@@ -431,18 +431,18 @@ def runNodejsGenericJenkinsfile() {
 
                         } else {
 
-                            if (params.testing.predeploy.sonarQubeParameters.sonarSources
-                                && params.testing.predeploy.sonarQubeParameters.sonarTests
-                                && params.testing.predeploy.sonarQubeParameters.sonarTestExecutionReportPath
-                                && params.testing.predeploy.sonarQubeParameters.sonarCoverageReportPath
-                                && params.testing.predeploy.sonarQubeParameters.sonarExclusions) {
+                            if (params.testing.predeploy.sonarQubeAnalisis.sonarSources
+                                && params.testing.predeploy.sonarQubeAnalisis.sonarTests
+                                && params.testing.predeploy.sonarQubeAnalisis.sonarTestExecutionReportPath
+                                && params.testing.predeploy.sonarQubeAnalisis.sonarCoverageReportPath
+                                && params.testing.predeploy.sonarQubeAnalisis.sonarExclusions) {
 
                                 //Pipeline parameters contains properties for SonarQube.
-                                def sonarSources = params.testing.predeploy.sonarQubeParameters.sonarSources
-                                def sonarTests = params.testing.predeploy.sonarQubeParameters.sonarTests
-                                def sonarTestExecutionReportPath = params.testing.predeploy.sonarQubeParameters.sonarTestExecutionReportPath
-                                def sonarCoverageReportPath = params.testing.predeploy.sonarQubeParameters.sonarCoverageReportPath
-                                def sonarExclusions = params.testing.predeploy.sonarQubeParameters.sonarExclusions
+                                def sonarSources = params.testing.predeploy.sonarQubeAnalisis.sonarSources
+                                def sonarTests = params.testing.predeploy.sonarQubeAnalisis.sonarTests
+                                def sonarTestExecutionReportPath = params.testing.predeploy.sonarQubeAnalisis.sonarTestExecutionReportPath
+                                def sonarCoverageReportPath = params.testing.predeploy.sonarQubeAnalisis.sonarCoverageReportPath
+                                def sonarExclusions = params.testing.predeploy.sonarQubeAnalisis.sonarExclusions
 
                                 echo 'sonarQube parameters extracted from pipeline parameters:'
 
@@ -459,7 +459,7 @@ def runNodejsGenericJenkinsfile() {
                             } else {
                                 //Failed status
                                 currentBuild.result = NodejsConstants.FAILURE_BUILD_RESULT
-                                throw new hudson.AbortException("A mandatory sonarQube parameter has not found. A sonar-project.properties OR sonarQube pipeline parameters are mandatory. The mandatory properties on sonar-project.properties are sonar.sources, sonar.tests, sonar.testExecutionReportPaths, sonar.javascript.lcov.reportPaths and sonar.exclusions. The mandatory params.testing.predeploy.sonarQubeParameters of pipeline are:  sonarSources, sonarTests, sonarTestExecutionReportPath. sonarCoverageReportPath amd sonarExclusions")
+                                throw new hudson.AbortException("A mandatory sonarQube parameter has not found. A sonar-project.properties OR sonarQube pipeline parameters are mandatory. The mandatory properties on sonar-project.properties are sonar.sources, sonar.tests, sonar.testExecutionReportPaths, sonar.javascript.lcov.reportPaths and sonar.exclusions. The mandatory params.testing.predeploy.sonarQubeAnalisis parameters of pipeline are: sonarSources, sonarTests, sonarTestExecutionReportPath. sonarCoverageReportPath amd sonarExclusions")
 
                             }
 
