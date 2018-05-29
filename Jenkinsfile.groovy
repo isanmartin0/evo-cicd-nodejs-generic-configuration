@@ -6,7 +6,7 @@ import java.util.Date
 
 def runNodejsGenericJenkinsfile() {
 
-    utils = new NodejsUtils()
+    def utils = new NodejsUtils()
 
     def npmRepositoryURL = 'https://digitalservices.evobanco.com/artifactory/npm-release-local'
 
