@@ -459,7 +459,7 @@ def runNodejsGenericJenkinsfile() {
                             } else {
                                 //Failed status
                                 currentBuild.result = NodejsConstants.FAILURE_BUILD_RESULT
-                                throw new hudson.AbortException("The sonarQube parameters has not found. A sonar-project.properties or pipeline parameters are mandatory")
+                                throw new hudson.AbortException("A mandatory sonarQube parameter has not found. A sonar-project.properties OR sonarQube pipeline parameters are mandatory. The mandatory properties on sonar-project.properties are sonar.sources, sonar.tests, sonar.testExecutionReportPaths, sonar.javascript.lcov.reportPaths and sonar.exclusions. The mandatory params.testing.predeploy.sonarQubeParameters of pipeline are:  sonarSources, sonarTests, sonarTestExecutionReportPath. sonarCoverageReportPath amd sonarExclusions")
 
                             }
 
@@ -473,7 +473,7 @@ def runNodejsGenericJenkinsfile() {
 
 
                 currentBuild.result = NodejsConstants.SUCCESS_BUILD_RESULT
-                exit 0
+                return
 
                 if (branchType in params.npmRegistryDeploy) {
 
