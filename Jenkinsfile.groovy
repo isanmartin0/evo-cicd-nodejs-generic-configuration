@@ -26,7 +26,7 @@ def runNodejsGenericJenkinsfile() {
     //Parallel project configuration (PPC) properties
     def branchPPC = 'master'
     String credentialsIdPPCDefault = '4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials of the parallel configuration project
-    String credentialsIdPPC
+    def credentialsIdPPC
     def relativeTargetDirPPC = '/tmp/configs/PPC/'
     def isPPCJenkinsFile = false
     def isPPCJenkinsYaml = false
