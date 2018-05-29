@@ -85,6 +85,7 @@ def runNodejsGenericJenkinsfile() {
     int image_stream_nodejs_version = image_stream_nodejs_version_default
 
     def NPM_TOKEN_CREDENTIALS = "2631fdfc-50c2-458a-b257-8571a4038b38"
+    def sonarProjectPath = "sonar-project.properties"
 
     echo "BEGIN NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
 
@@ -404,6 +405,11 @@ def runNodejsGenericJenkinsfile() {
 
                     stage('SonarQube') {
                         echo "Running SonarQube..."
+
+
+                        // Jenkinsfile
+                        isSonarProjectFile = fileExists sonarProjectPath
+                        echo "isSonarProjectFile : ${isSonarProjectFile}"
 
                         def sonar_project_key = packageName + "-" + branchNameHY
                         def sonar_project_name = packageName + "-" + branchNameHY
