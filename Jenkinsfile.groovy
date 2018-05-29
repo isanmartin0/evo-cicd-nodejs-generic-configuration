@@ -389,10 +389,18 @@ def runNodejsGenericJenkinsfile() {
                                 sh 'npm i -D jest-sonar-reporter'
                             }
 
+                            xxx = input message: 'Waiting for user approval',
+                                    parameters: [choice(name: 'Continue?', choices: 'No\nYes', description: 'Choose "Yes" if you want to continue')]
+
+
                             echo 'Testing...'
                             withNPM(npmrcConfig: 'my-custom-npmrc') {
                                 sh 'npm test'
                             }
+
+                            xxx = input message: 'Waiting for user approval',
+                                    parameters: [choice(name: 'Continue?', choices: 'No\nYes', description: 'Choose "Yes" if you want to continue')]
+
                         }
 
                     }
@@ -416,10 +424,6 @@ def runNodejsGenericJenkinsfile() {
 
                         echo "sonar_project_key: ${sonar_project_key}"
                         echo "sonar_project_name: ${sonar_project_name}"
-
-                        echo "Replacing sonar.project.key and sonar.project.name variables with real values"
-                        sh "sed -i -e 's/{sonarProjectKeyPlaceholder}/${sonar_project_key}/g' sonar-project.properties"
-                        sh "sed -i -e 's/{sonarProjectNamePlaceholder}/${sonar_project_name}/g' sonar-project.properties"
 
                         // requires SonarQube Scanner 3.1+
                         def scannerHome = tool 'SonarQube Scanner 3.1.0'
