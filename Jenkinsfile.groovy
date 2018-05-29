@@ -423,12 +423,9 @@ def runNodejsGenericJenkinsfile() {
 
                         // requires SonarQube Scanner 3.1+
                         def scannerHome = tool 'SonarQube Scanner 3.1.0'
-                        withSonarQubeEnv('sonarqube') {
-                            //sh "${scannerHome}/bin/sonar-scanner -X"
-                        }
 
                         withSonarQubeEnv('sonarqube') {
-                            sh "${scannerHome}/bin/sonar-scanner -X -Dsonar.projectKey=aaaaaaaaaa -Dsonar.projectName=aaaaaaaaaa"
+                            sh "${scannerHome}/bin/sonar-scanner -X -Dsonar.projectKey=${sonar_project_key} -Dsonar.projectName=${sonar_project_name}"
                         }
                     }
 
