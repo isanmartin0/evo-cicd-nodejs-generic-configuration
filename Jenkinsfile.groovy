@@ -557,6 +557,10 @@ def runNodejsGenericJenkinsfile() {
                     createPortEnvironmentVariable = params.ports.createPortEnvironmentVariable.toBoolean()
                 }
 
+                echo "useSpecificPort: ${useSpecificPort}"
+                echo "port_number: ${port_number}"
+                echo "createPortEnvironmentVariable: ${createPortEnvironmentVariable}"
+
 
                 /***************************************************
                  ************* DEV MODE PARAMETERS *****************
@@ -576,6 +580,8 @@ def runNodejsGenericJenkinsfile() {
                     debug_port_number = debugPortParam as Integer
                 }
 
+                echo "devMode: ${devMode}"
+                echo "debug_port_number: ${debug_port_number}"
 
                 /***************************************************
                  ************* NPM MIRROR PARAMETERS *****************
@@ -593,6 +599,8 @@ def runNodejsGenericJenkinsfile() {
                     theNpmMirror = params.npmMirror
                 }
 
+                echo "useNpmMirror: ${useNpmMirror}"
+                echo "theNpmMirror: ${theNpmMirror}"
 
                 /*******************************************************************
                  ************* NPM RUN ALTERNATE SCRIPT PARAMETERS *****************
@@ -610,6 +618,8 @@ def runNodejsGenericJenkinsfile() {
                     alternateNpmRunScript = params.alternateNpmRunScript
                 }
 
+                echo "useAlternateNpmRun: ${useAlternateNpmRun}"
+                echo "alternateNpmRunScript: ${alternateNpmRunScript}"
 
                 /**********************************************************
                  ************* OPENSHIFT PROJECT CREATION *****************
