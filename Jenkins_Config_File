@@ -1,5 +1,7 @@
 #!/usr/bin/env groovy
 
+@Library('msa-cicd-jenkins-shared-libs') _
+
 def jenkinsFile
 def gitDefaultProjectConfigurationPath='https://github.com/isanmartin0/evo-cicd-generic-configuration'
 def gitNodejsDefaultProjectConfigurationPath='https://github.com/isanmartin0/evo-cicd-nodejs-generic-configuration'
@@ -18,28 +20,42 @@ node() {
     echo "Detecting application type"
     checkout scm
 
-    try {
-      def pom = readMavenPom()
-      isMavenApplication=true
-      echo "pom.xml is found. Is a maven application type"
-    }
-    catch (exc) {
-      echo "pom.xml not found"
+    isMavenApplication = fileExists mavenApplicationFile
+
+    if (isMavenApplication) {
+      echo "${mavenApplicationFile} file ... FOUND. Is a Maven application type"
+
+      try {
+        def pom = readMavenPom()
+      }
+      catch (exc) {
+        echo "${mavenApplicationFile} file ... INCORRECT."
+        isMavenApplication=false
+      }
+
+    } else {
+      echo "${mavenApplicationFile} file ... NOT FOUND."
     }
 
     if (!isMavenApplication) {
-      try {
-        def packageJSON = readJSON file: 'package.json'
-        isNodejsApplication=true
-        echo "package.json is found. Is a Node.js application type"
-      }
-      catch (exc) {
-        echo "package.json not found"
+      isNodejsApplication = fileExists nodeApplicationFile
+
+      if (isNodejsApplication) {
+        echo "${nodeApplicationFile} file ... FOUND. Is a NodeJS application type"
+        try {
+          def packageJSON = readJSON file: nodeApplicationFile
+        }
+        catch (exc) {
+          echo "${nodeApplicationFile} file ... INCORRECT."
+          isNodejsApplication=false
+        }
+      } else {
+       	 echo "${nodeApplicationFile} file ... NOT FOUND."
       }
     }
 
     if (!isMavenApplication && !isNodejsApplication) {
-     	throw new hudson.AbortException("A maven or Node.js application type not found. ")
+     	throw new hudson.AbortException("A correct Maven or NodeJS application type not found.")
     }
 
   }
@@ -62,7 +78,7 @@ stage('Generic Jenkinsfile (PGC) load') {
 
   } else if (isNodejsApplication) {
 
-		echo "Loading Node.js Jenkins pipeline (PGC)"
+		echo "Loading NodeJS Jenkins pipeline (PGC)"
 
     	jenkinsFile = fileLoader.fromGit(gitDefaultProjectConfigurationJenkinsFile,
                                      	 gitNodejsDefaultProjectConfigurationPath,
@@ -73,7 +89,7 @@ stage('Generic Jenkinsfile (PGC) load') {
   		jenkinsFile.runNodejsGenericJenkinsfile()
 
   } else {
-    throw new hudson.AbortException("A maven or Node.js application type not found. ")
+    throw new hudson.AbortException("A correct Maven or NodeJS application type not found.")
   }
 
 }

@@ -1,7 +1,6 @@
 openshift:
   templatePath: kube/nodejs_template.yaml
 
-
 imageStreamNodejsVersion: 8
 devMode: false
 debugPort: 5858
@@ -14,6 +13,9 @@ ports:
   useSpecificPort: true
   portNumber: 3000
   createPortEnvironmentVariable: true
+
+environmentVariables:
+  # environmentVariable1: value1
 
 npmRegistryDeploy:
   - release
