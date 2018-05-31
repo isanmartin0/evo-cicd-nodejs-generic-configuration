@@ -657,10 +657,21 @@ def runNodejsGenericJenkinsfile() {
                  **************************************************************/
 
                 echo "Creating environment variables"
+                def mapEnvironmentVariables = [:]
 
+                echo "params.environmentVariables:"
+                params.environmentVariables.each { key, value ->
+                    echo "params environment variable: ${key} = ${value}"
+                }
 
+                if (params.environmentVariables) {
+                    mapEnvironmentVariables = params.environmentVariables
+                }
 
-                def mapEnvironmentVariables = ["ENVIR_1" : "XXX", "ENVIR_2" : 2, "ENVIR_3" : true]
+                echo "mapEnvironmentVariables:"
+                mapEnvironmentVariables.each { key, value ->
+                    echo "Map environment variable: ${key} = ${value}"
+                }
 
                 retry(3) {
                     nodejsOpenshiftEnvironmentVariables {
