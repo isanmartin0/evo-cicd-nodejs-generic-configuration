@@ -658,6 +658,10 @@ def runNodejsGenericJenkinsfile() {
 
                 echo "Creating environment variables"
 
+
+
+                def mapEnvironmentVariables = ["ENVIR_1" : "XXX", "ENVIR_2" : 2, "ENVIR_3" : true]
+
                 retry(3) {
                     nodejsOpenshiftEnvironmentVariables {
                         branchHY = branchNameHY
@@ -670,6 +674,7 @@ def runNodejsGenericJenkinsfile() {
                         npmMirrorOpenshift = theNpmMirror
                         useAlternateNpmRunOpenshift = useAlternateNpmRun
                         alternateNpmRunScriptOpenshift = alternateNpmRunScript
+                        map_environment_variables = mapEnvironmentVariables
                     }
 
                     sleep(10)
