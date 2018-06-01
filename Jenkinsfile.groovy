@@ -342,7 +342,7 @@ def runNodejsGenericJenkinsfile() {
 
             stage('TEST npm whoami artifactory credentials') {
                 echo 'Try credentials'
-                withCredentials([string(credentialsId: "artifactoryCredential", variable: 'ARTIFACTORY_TOKEN')]) {
+                withCredentials([string(credentialsId: "${artifactoryCredential}", variable: 'ARTIFACTORY_TOKEN')]) {
                     withEnv(["NPM_TOKEN=${ARTIFACTORY_TOKEN}"]) {
                         withNPM(npmrcConfig: 'my-custom-npmrc') {
                             sh 'npm whoami'
