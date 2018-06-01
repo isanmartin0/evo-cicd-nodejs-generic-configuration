@@ -320,7 +320,7 @@ def runNodejsGenericJenkinsfile() {
                 echo 'Setting Artifactory NPM registry'
                 withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
                     withNPM(npmrcConfig: 'my-custom-npmrc') {
-                        sh "npm config set registry ${npmRepositoryURL} "
+                        //sh "npm config set registry ${npmRepositoryURL} "
                     }
                 }
             }
