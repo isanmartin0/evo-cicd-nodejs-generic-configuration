@@ -643,7 +643,6 @@ def runNodejsGenericJenkinsfile() {
                     sourceRepositoryURL = projectURL
                     sourceRepositoryBranch = branchName
                     portNumber = port_number
-                    npmMirror = theNpmMirror
                     nodejsVersion = image_stream_nodejs_version
                     package_tag = packageTag
                     package_tarball = packageTarball
@@ -696,9 +695,12 @@ def runNodejsGenericJenkinsfile() {
                     repoUrl = npmRepositoryURL
                     branchHY = branchNameHY
                     branch_type = branchType
-                    package_tag = packageTag
-                    package_tarball = packageTarball
-                    is_scoped_package = isScopedPackage
+                    devModeOpenshift = devMode
+                    debugPortOpenshift = debug_port_number
+                    useNpmMirrorOpenshift = useNpmMirror
+                    npmMirrorOpenshift = theNpmMirror
+                    useAlternateNpmRunOpenshift = useAlternateNpmRun
+                    alternateNpmRunScriptOpenshift = alternateNpmRunScript
                 }
             }
 

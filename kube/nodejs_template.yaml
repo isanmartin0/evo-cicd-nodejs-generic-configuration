@@ -51,8 +51,6 @@ objects:
         env:
         - name: ARTIFACTORY_TOKEN
           value: ${ARTIFACTORY_TOKEN}
-        - name: NPM_MIRROR
-          value: ${NPM_MIRROR}
         - name: NODEJS_PACKAGE_TAG
           value: ${NODEJS_PACKAGE_TAG}
         - name: NODEJS_PACKAGE_TARBALL
@@ -217,9 +215,6 @@ parameters:
 - description: "SOURCE_REPOSITORY_BRANCH"
   name: "SOURCE_REPOSITORY_BRANCH"
   value: ""
-- description: "NPM_MIRROR"
-  name: "NPM_MIRROR"
-  value: ""
 - description: "NODEJS_VERSION"
   name: "NODEJS_VERSION"
   value: ""
@@ -247,3 +242,4 @@ parameters:
 - description: "Flag indicating a scoped package"
   name: "NODEJS_IS_SCOPED_PACKAGE"
   value: "false"
+
