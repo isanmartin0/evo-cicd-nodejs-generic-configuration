@@ -8,7 +8,7 @@ def runNodejsGenericJenkinsfile() {
 
     def utils = new NodejsUtils()
 
-    def npmRepositoryURL = 'https://digitalservices.evobanco.com/artifactory/npm-release-local'
+    def npmRepositoryURL = 'http://10.6.14.20:8081/artifactory/api/npm/npm-repo/'
 
     def sonarQube = 'http://sonarqube:9000'
     def openshiftURL = 'https://openshift.grupoevo.corp:8443'
@@ -316,13 +316,36 @@ def runNodejsGenericJenkinsfile() {
                 sh "npm -v"
             }
 
+            stage('Configure Artifactory NPM Registry') {
+                echo 'Setting Artifactory NPM registry'
+                withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
+                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                        sh "npm config set registry ${npmRepositoryURL} "
+                    }
+                }
+            }
+
             stage('TEST npm whoami') {
+                echo 'Try credentials'
                 withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
                     withNPM(npmrcConfig: 'my-custom-npmrc') {
                         sh 'npm whoami'
                     }
                 }
             }
+
+            stage('Get Artifactory NPM Registry') {
+                echo 'Setting Artifactory NPM registry'
+                withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
+                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                        sh "npm config get registry"
+                    }
+                }
+            }
+
+
+            currentBuild.result = "FAILED"
+            throw new hudson.AbortException("Error")
 
 
             stage('Prepare') {
