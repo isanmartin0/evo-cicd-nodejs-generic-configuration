@@ -325,6 +325,21 @@ def runNodejsGenericJenkinsfile() {
                 }
             }
 
+
+            stage('Get credentials from Artifactory') {
+                echo 'Get credentials from Artifactory'
+
+                withCredentials([string(credentialsId: "artifactoryCredential", variable: 'ARTIFACTORY_TOKEN')]) {
+                    sh " curl -uadmin:${ARTIFACTORY_TOKEN} ${npmRepositoryURL}/auth"
+
+                }
+
+            }
+
+
+
+
+
             stage('TEST npm whoami artifactory credentials') {
                 echo 'Try credentials'
                 withCredentials([string(credentialsId: "artifactoryCredential", variable: 'ARTIFACTORY_TOKEN')]) {
