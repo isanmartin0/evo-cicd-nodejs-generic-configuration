@@ -15,6 +15,7 @@ def runNodejsGenericJenkinsfile() {
     def openshiftCredential = 'openshift'
     def registry = '172.20.253.34'
     def artifactoryCredential = 'artifactory-token'
+    def artifactoryNPMCredential = 'artifactory-npm-token'
     def jenkinsNamespace = 'cicd'
     def params
     String envLabel
@@ -316,25 +317,7 @@ def runNodejsGenericJenkinsfile() {
                 sh "npm -v"
             }
 
-            stage('Configure Artifactory NPM Registry') {
-                echo 'Setting Artifactory NPM registry'
-                withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                        sh "npm config set registry ${npmRepositoryURL} "
-                    }
-                }
-            }
 
-
-            stage('Get credentials from Artifactory') {
-                echo 'Get credentials from Artifactory'
-
-                withCredentials([string(credentialsId: "${artifactoryCredential}", variable: 'ARTIFACTORY_TOKEN')]) {
-                    sh " curl -uadmin:${ARTIFACTORY_TOKEN} ${npmRepositoryURL}/auth"
-
-                }
-
-            }
 
 
 
@@ -342,7 +325,7 @@ def runNodejsGenericJenkinsfile() {
 
             stage('TEST npm whoami artifactory credentials') {
                 echo 'Try credentials'
-                withCredentials([string(credentialsId: "${artifactoryCredential}", variable: 'ARTIFACTORY_TOKEN')]) {
+                withCredentials([string(credentialsId: "${artifactoryNPMCredential}", variable: 'ARTIFACTORY_TOKEN')]) {
                     withEnv(["NPM_TOKEN=${ARTIFACTORY_TOKEN}"]) {
                         withNPM(npmrcConfig: 'my-custom-npmrc') {
                             sh 'npm whoami'
