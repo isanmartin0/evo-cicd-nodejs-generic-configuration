@@ -331,11 +331,11 @@ def runNodejsGenericJenkinsfile() {
 
             stage('TEST npm whoami artifactory credentials') {
                 echo 'Try credentials'
-                //withCredentials([string(credentialsId: "${artifactoryNPMCredential}", variable: 'ARTIFACTORY_TOKEN')]) {
-                    //withEnv(["NPM_TOKEN=${ARTIFACTORY_TOKEN}"]) {
+                withCredentials([string(credentialsId: "${artifactoryNPMCredential}", variable: 'ARTIFACTORY_TOKEN')]) {
+                    withEnv(["NPM_TOKEN=${ARTIFACTORY_TOKEN}"]) {
                         withNPM(npmrcConfig: 'my-custom-npmrc') {
 
-
+                            sh "npm config set registry ${npmRepositoryURL} "
                             def xxx = input message: 'Waiting for user approval',
                                     parameters: [choice(name: 'Continue and deploy?', choices: 'No\nYes', description: 'Choose "Yes" if you want to deploy this build')]
 
@@ -343,8 +343,8 @@ def runNodejsGenericJenkinsfile() {
 
                             sh 'npm whoami'
                         }
-                    //}
-                //}
+                    }
+                }
             }
 
 
