@@ -319,11 +319,11 @@ def runNodejsGenericJenkinsfile() {
 
             stage('Configure Artifactory NPM Registry') {
                 echo 'Setting Artifactory NPM registry'
-                withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                        sh "npm config set registry ${npmRepositoryURL} "
-                    }
-                }
+                //withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
+                //    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                //        sh "npm config set registry ${npmRepositoryURL} "
+                //    }
+                //}
             }
 
 
@@ -336,6 +336,9 @@ def runNodejsGenericJenkinsfile() {
                         withNPM(npmrcConfig: 'my-custom-npmrc') {
 
                             sh "npm config set registry ${npmRepositoryURL} "
+
+                            sh "npm config get registry"
+
                             def xxx = input message: 'Waiting for user approval',
                                     parameters: [choice(name: 'Continue and deploy?', choices: 'No\nYes', description: 'Choose "Yes" if you want to deploy this build')]
 
