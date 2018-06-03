@@ -339,10 +339,6 @@ def runNodejsGenericJenkinsfile() {
 
                             sh "npm config get registry"
 
-                            def xxx = input message: 'Waiting for user approval',
-                                    parameters: [choice(name: 'Continue and deploy?', choices: 'No\nYes', description: 'Choose "Yes" if you want to deploy this build')]
-
-
 
                             sh 'npm whoami'
                         }
