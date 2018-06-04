@@ -57,6 +57,8 @@ objects:
           value: ${NODEJS_PACKAGE_TARBALL}
         - name: NODEJS_IS_SCOPED_PACKAGE
           value: ${NODEJS_IS_SCOPED_PACKAGE}
+        - name: ARTIFACTORY_NPM_REPO
+          value: ${ARTIFACTORY_NPM_REPO}
         from:
           kind: ImageStreamTag
           name: nodejs:${NODEJS_VERSION}
@@ -242,4 +244,6 @@ parameters:
 - description: "Flag indicating a scoped package"
   name: "NODEJS_IS_SCOPED_PACKAGE"
   value: "false"
-
+- description: "Artifactory NPM repository"
+  name: "ARTIFACTORY_NPM_REPO"
+  value: ""
