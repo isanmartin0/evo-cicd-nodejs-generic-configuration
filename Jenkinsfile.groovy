@@ -326,7 +326,6 @@ def runNodejsGenericJenkinsfile() {
 
 
             if (branchType in params.npmRegistryDeploy) {
-
                 stage('TEST Artifactory NPM registry credentials') {
                     echo 'Try credentials'
                     withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
