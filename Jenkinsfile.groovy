@@ -325,27 +325,25 @@ def runNodejsGenericJenkinsfile() {
 
 
 
+            if (branchType in params.npmRegistryDeploy) {
 
-            stage('TEST npm whoami artifactory credentials') {
-                echo 'Try credentials'
-                withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
-                    withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
-                        withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=yyy"]) {
-                            withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                echo 'Get config registry'
-                                sh 'npm config get registry'
+                stage('TEST Artifactory NPM registry credentials') {
+                    echo 'Try credentials'
+                    withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
+                        withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
+                            withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
+                                withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                    echo 'Get config registry'
+                                    sh 'npm config get registry'
 
-                                echo 'Test npm repository authentication'
-                                sh 'npm whoami'
+                                    echo 'Test npm repository authentication'
+                                    sh 'npm whoami'
+                                }
                             }
                         }
                     }
                 }
             }
-
-
-            currentBuild.result = "FAILED"
-            throw new hudson.AbortException("Error")
 
 
             stage('Prepare') {
@@ -504,13 +502,21 @@ def runNodejsGenericJenkinsfile() {
                     stage('Artifact Registry Publish') {
                         echo "Publishing artifact to a NPM registry"
 
-                        withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                            withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                echo 'npm whoami'
-                                sh 'npm whoami'
-                                echo 'npm config registry'
-                                sh 'npm config get registry'
-                                //sh 'npm publish'
+                        withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
+                            withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
+                                withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
+                                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+
+                                        echo 'Get config registry'
+                                        sh 'npm config get registry'
+
+                                        echo 'Test npm repository authentication'
+                                        sh 'npm whoami'
+
+                                        echo 'Publish package on Artifactory NPM registry'
+                                        //sh 'npm publish'
+                                    }
+                                }
                             }
                         }
 
