@@ -319,14 +319,7 @@ def runNodejsGenericJenkinsfile() {
 
             stage('Configure Artifactory NPM Registry') {
                 echo 'Setting Artifactory NPM registry'
-                withEnv(["NPM_AUTH=amNmZXJuYW5kZXo6QVA2MnhVWkpBRWQ4VGF4NW5WdDJSOE1Ib2FH"]) {
-                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                        sh "npm config set registry ${npmRepositoryURL} "
-                        echo 'NPM version:'
-                        sh "npm -v"
-
-                    }
-                }
+                sh "npm config set registry ${npmRepositoryURL} "
             }
 
 
@@ -336,7 +329,7 @@ def runNodejsGenericJenkinsfile() {
                 echo 'Try credentials'
                 withCredentials([string(credentialsId: "${artifactoryNPMCredential}", variable: 'ARTIFACTORY_TOKEN')]) {
                     //withEnv(["NPM_TOKEN=${ARTIFACTORY_TOKEN}"]) {
-                    withEnv(["NPM_AUTH=amNmZXJuYW5kZXo6QVA2MnhVWkpBRWQ4VGF4NW5WdDJSOE1Ib2FH"]) {
+                    withEnv(["NPM_AUTH=amNmZXJuYW5kZXo6QVA2MnhVWkpBRWQ4VGF4NW5WdDJSOE1Ib2FH", "NPM_AUTH_EMAIL=jcfernandez@keedio.com"]) {
                         withNPM(npmrcConfig: 'my-custom-npmrc') {
 
                             sh "npm config get registry"
@@ -344,25 +337,6 @@ def runNodejsGenericJenkinsfile() {
 
                             sh 'npm whoami'
                         }
-                    }
-                }
-            }
-
-
-            stage('TEST npm whoami npm credentials') {
-                echo 'Try credentials'
-                withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                        sh 'npm whoami'
-                    }
-                }
-            }
-
-            stage('Get Artifactory NPM Registry') {
-                echo 'Setting Artifactory NPM registry'
-                withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                        sh "npm config get registry"
                     }
                 }
             }
