@@ -330,7 +330,7 @@ def runNodejsGenericJenkinsfile() {
                 echo 'Try credentials'
                 withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
                     withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
-                        withEnv(["NPM_AUTH=xxx", "NPM_AUTH_EMAIL=yyy"]) {
+                        withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=yyy"]) {
                             withNPM(npmrcConfig: 'my-custom-npmrc') {
                                 echo 'Get config registry'
                                 sh 'npm config get registry'
