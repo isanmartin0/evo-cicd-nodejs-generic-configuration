@@ -319,7 +319,14 @@ def runNodejsGenericJenkinsfile() {
 
             stage('Configure Artifactory NPM Registry') {
                 echo 'Setting Artifactory NPM registry'
-                sh "npm config set registry ${npmRepositoryURL} "
+                withEnv(["NPM_AUTH=amNmZXJuYW5kZXo6QVA2MnhVWkpBRWQ4VGF4NW5WdDJSOE1Ib2FH"]) {
+                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                        sh "npm config set registry ${npmRepositoryURL} "
+                        echo 'NPM version:'
+                        sh "npm -v"
+
+                    }
+                }
             }
 
 
