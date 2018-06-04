@@ -508,26 +508,24 @@ def runNodejsGenericJenkinsfile() {
 
                             } else {
 
-                                if (branchType in params.npmRegistryDeploy) {
-                                    stage('Check published package on NPM registry') {
+                                stage('Check published package on NPM registry') {
 
-                                        try {
-                                            echo 'Get tarball location of package ...'
-                                            tarball_script = $/eval "npm view  ${
-                                                packageTag
-                                            } dist.tarball | grep '${
-                                                packageTarball
-                                            }'"/$
-                                            echo "${tarball_script}"
-                                            def tarball_view = sh(script: "${tarball_script}", returnStdout: true).toString().trim()
-                                            echo "${tarball_view}"
-                                         } catch (exc) {
-                                            echo 'There is an error on retrieving the tarball location'
-                                            def exc_message = exc.message
-                                            echo "${exc_message}"
-                                            currentBuild.result = "FAILED"
-                                            throw new hudson.AbortException("Error checking existence of package on NPM registry")
-                                        }
+                                    try {
+                                        echo 'Get tarball location of package ...'
+                                        tarball_script = $/eval "npm view  ${
+                                            packageTag
+                                        } dist.tarball | grep '${
+                                            packageTarball
+                                        }'"/$
+                                        echo "${tarball_script}"
+                                        def tarball_view = sh(script: "${tarball_script}", returnStdout: true).toString().trim()
+                                        echo "${tarball_view}"
+                                     } catch (exc) {
+                                        echo 'There is an error on retrieving the tarball location'
+                                        def exc_message = exc.message
+                                        echo "${exc_message}"
+                                        currentBuild.result = "FAILED"
+                                        throw new hudson.AbortException("Error checking existence of package on NPM registry")
                                     }
                                 }
                             }
