@@ -320,7 +320,15 @@ def runNodejsGenericJenkinsfile() {
 
             stage('Configure Artifactory NPM Registry') {
                 echo 'Setting Artifactory NPM registry'
-                sh "npm config set registry ${npmRepositoryURL} "
+                withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
+                    withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
+                        withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
+                            withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                sh "npm config set registry ${npmRepositoryURL} "
+                            }
+                        }
+                    }
+                }
             }
 
 
