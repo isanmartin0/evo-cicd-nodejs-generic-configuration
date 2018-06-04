@@ -9,6 +9,7 @@ def runNodejsGenericJenkinsfile() {
     def utils = new NodejsUtils()
 
     def npmRepositoryURL = 'http://10.6.14.20:8081/artifactory/api/npm/npm-repo/'
+    def npmLocalRepositoryURL = 'http://10.6.14.20:8081/artifactory/api/npm/npm-local/'
 
     def sonarQube = 'http://sonarqube:9000'
     def openshiftURL = 'https://openshift.grupoevo.corp:8443'
@@ -487,7 +488,7 @@ def runNodejsGenericJenkinsfile() {
 
                                         try {
                                             echo 'Publish package on Artifactory NPM registry'
-                                            sh 'npm publish'
+                                            sh "npm publish --registry ${npmLocalRepositoryURL}"
                                         } catch (exc) {
                                             echo 'There is an error on publish package'
                                             def exc_message = exc.message
@@ -642,9 +643,6 @@ def runNodejsGenericJenkinsfile() {
                  **********************************************************/
 
                 echo "Building image on OpenShift..."
-
-                //def my_sourceRepositoryURL = "https://github.com/isanmartin0/nodejs-helloWorld"
-                //def my_sourceRepositoryBranch = "release/1.0.3"
 
                 nodejsOpenshiftCheckAndCreateProject {
                     oseCredential = openshiftCredential
