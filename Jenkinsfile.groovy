@@ -488,15 +488,11 @@ def runNodejsGenericJenkinsfile() {
 
                                         try {
                                             echo 'Publish package on Artifactory NPM registry'
-                                            sh "npm publish --registry ${npmLocalRepositoryURL}"
+                                            //sh "npm publish --registry ${npmLocalRepositoryURL}"
                                         } catch (exc) {
                                             echo 'There is an error on publish package'
                                             def exc_message = exc.message
                                             echo "${exc_message}"
-
-                                            def xxx = input message: 'Waiting for user approval',
-                                                    parameters: [choice(name: 'Continue and deploy?', choices: 'No\nYes', description: 'Choose "Yes" if you want to deploy this build')]
-
 
                                             currentBuild.result = "FAILED"
                                             throw new hudson.AbortException("Error checking existence of package on NPM registry")
