@@ -320,37 +320,9 @@ def runNodejsGenericJenkinsfile() {
 
             stage('Configure Artifactory NPM Registry') {
                 echo 'Setting Artifactory NPM registry'
-                withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
-                    withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
-                        withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
-                            withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                sh "npm config set registry ${npmRepositoryURL} "
-                            }
-                        }
-                    }
-                }
+                sh "npm config set registry ${npmRepositoryURL} "
             }
 
-
-
-            if (branchType in params.npmRegistryDeploy) {
-                stage('TEST Artifactory NPM registry credentials') {
-                    echo 'Try credentials'
-                    withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
-                        withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
-                            withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
-                                withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                    echo 'Get config registry'
-                                    sh 'npm config get registry'
-
-                                    echo 'Test npm repository authentication'
-                                    sh 'npm whoami'
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
 
             stage('Prepare') {
@@ -399,42 +371,27 @@ def runNodejsGenericJenkinsfile() {
 
                 stage('Build') {
                     echo 'Building dependencies...'
-
-                    withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
-                        withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
-                            withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
-                                withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                    sh 'npm i'
-                                }
-                            }
-                        }
-                    }
+                    sh 'npm i'
                 }
 
                 if (branchType in params.testing.predeploy.unitTesting) {
                     stage('Test') {
 
-                        withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
-                            withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
-                                withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
-                                    echo 'Installing jest'
-                                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                        sh 'npm i -D jest'
-                                    }
 
-                                    echo 'Installing jest-sonar-reporter'
-                                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                        sh 'npm i -D jest-sonar-reporter'
-                                    }
-
-                                    echo 'Testing...'
-                                    withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                        sh 'npm test'
-                                    }
-                                }
-                            }
+                        echo 'Installing jest'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm i -D jest'
                         }
 
+                        echo 'Installing jest-sonar-reporter'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm i -D jest-sonar-reporter'
+                        }
+
+                        echo 'Testing...'
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                            sh 'npm test'
+                        }
                     }
                 } else {
                     echo "Skipping unit tests..."
@@ -522,14 +479,14 @@ def runNodejsGenericJenkinsfile() {
                                 withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
                                     withNPM(npmrcConfig: 'my-custom-npmrc') {
 
-                                        echo 'Get config registry'
+                                        echo 'Get NPM config registry'
                                         sh 'npm config get registry'
 
-                                        echo 'Test npm repository authentication'
+                                        echo 'Test NPM repository authentication'
                                         sh 'npm whoami'
 
                                         echo 'Publish package on Artifactory NPM registry'
-                                        //sh 'npm publish'
+                                        sh 'npm publish'
                                     }
                                 }
                             }
@@ -558,11 +515,21 @@ def runNodejsGenericJenkinsfile() {
                     stage('Check published package on NPM registry') {
 
                         try {
-                            echo 'Get tarball location of package ...'
-                            tarball_script = $/eval "npm view  ${packageTag} dist.tarball | grep '${packageTarball}'"/$
-                            echo "${tarball_script}"
-                            def tarball_view = sh(script: "${tarball_script}", returnStdout: true).toString().trim()
-                            echo "${tarball_view}"
+                            withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
+                                withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
+                                    withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
+                                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                            echo 'Get tarball location of package ...'
+                                            tarball_script = $/eval "npm view  ${packageTag} dist.tarball | grep '${
+                                                packageTarball
+                                            }'"/$
+                                            echo "${tarball_script}"
+                                            def tarball_view = sh(script: "${tarball_script}", returnStdout: true).toString().trim()
+                                            echo "${tarball_view}"
+                                        }
+                                    }
+                                }
+                            }
                         } catch (exc) {
                             echo 'There is an error on retrieving the tarball location'
                             def exc_message = exc.message
