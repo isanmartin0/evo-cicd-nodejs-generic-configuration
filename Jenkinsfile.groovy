@@ -536,6 +536,15 @@ def runNodejsGenericJenkinsfile() {
                                         currentBuild.result = "FAILED"
                                         throw new hudson.AbortException("Error checking existence of package on NPM registry")
                                     }
+
+                                    echo "Setting source code to build from URL (build from registry package)"
+                                    echo "Source URL: ${projectURL} --> ${build_from_registry_url}"
+                                    projectURL = build_from_registry_url
+                                    echo "new projectURL: ${projectURL}"
+                                    echo "Setting source code to build from branch (build from registry package)"
+                                    echo "Source branch: ${branchName} --> ${build_from_artifact_branch}"
+                                    branchName = build_from_artifact_branch
+                                    echo "new branchName: ${branchName}"
                                 }
                             }
                         }
