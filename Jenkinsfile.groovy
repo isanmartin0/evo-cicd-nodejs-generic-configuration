@@ -15,7 +15,8 @@ def runNodejsGenericJenkinsfile() {
     def openshiftCredential = 'openshift'
     def registry = '172.20.253.34'
     def artifactoryCredential = 'artifactory-token'
-    def artifactoryNPMCredential = 'artifactory-npm-token'
+    def artifactoryNPMAuthCredential = 'artifactory-npm-auth'
+    def artifactoryNPMEmailAuthCredential = 'artifactory-npm-email-auth'
     def jenkinsNamespace = 'cicd'
     def params
     String envLabel
@@ -327,15 +328,16 @@ def runNodejsGenericJenkinsfile() {
 
             stage('TEST npm whoami artifactory credentials') {
                 echo 'Try credentials'
-                withCredentials([string(credentialsId: "${artifactoryNPMCredential}", variable: 'ARTIFACTORY_TOKEN')]) {
-                    //withEnv(["NPM_TOKEN=${ARTIFACTORY_TOKEN}"]) {
-                    withEnv(["NPM_AUTH=amNmZXJuYW5kZXo6QVA2MnhVWkpBRWQ4VGF4NW5WdDJSOE1Ib2FH", "NPM_AUTH_EMAIL=jcfernandez@keedio.com"]) {
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
+                    withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
+                        withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
+                            withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                echo 'Get config registry'
+                                sh 'npm config get registry'
 
-                            sh "npm config get registry"
-
-
-                            sh 'npm whoami'
+                                echo 'Test npm repository authentication'
+                                sh 'npm whoami'
+                            }
                         }
                     }
                 }
