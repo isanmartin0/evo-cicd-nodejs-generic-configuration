@@ -379,19 +379,19 @@ def runNodejsGenericJenkinsfile() {
 
 
                         echo 'Installing jest'
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+
                             sh 'npm i -D jest'
-                        }
+
 
                         echo 'Installing jest-sonar-reporter'
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+
                             sh 'npm i -D jest-sonar-reporter'
-                        }
+
 
                         echo 'Testing...'
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+
                             sh 'npm test'
-                        }
+
                     }
                 } else {
                     echo "Skipping unit tests..."
