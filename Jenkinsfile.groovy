@@ -392,9 +392,13 @@ def runNodejsGenericJenkinsfile() {
                 stage('Build') {
                     echo 'Building dependencies...'
 
-                    withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                        withNPM(npmrcConfig: 'my-custom-npmrc') {
-                            sh 'npm i'
+                    withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
+                        withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
+                            withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
+                                withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                    sh 'npm i'
+                                }
+                            }
                         }
                     }
                 }
@@ -402,20 +406,24 @@ def runNodejsGenericJenkinsfile() {
                 if (branchType in params.testing.predeploy.unitTesting) {
                     stage('Test') {
 
-                        withEnv(["NPM_TOKEN=${NPM_TOKEN_CREDENTIALS}"]) {
-                            echo 'Installing jest'
-                            withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                sh 'npm i -D jest'
-                            }
+                        withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
+                            withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
+                                withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
+                                    echo 'Installing jest'
+                                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                        sh 'npm i -D jest'
+                                    }
 
-                            echo 'Installing jest-sonar-reporter'
-                            withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                sh 'npm i -D jest-sonar-reporter'
-                            }
+                                    echo 'Installing jest-sonar-reporter'
+                                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                        sh 'npm i -D jest-sonar-reporter'
+                                    }
 
-                            echo 'Testing...'
-                            withNPM(npmrcConfig: 'my-custom-npmrc') {
-                                sh 'npm test'
+                                    echo 'Testing...'
+                                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                        sh 'npm test'
+                                    }
+                                }
                             }
                         }
 
