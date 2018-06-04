@@ -367,117 +367,117 @@ def runNodejsGenericJenkinsfile() {
                 echo "Environment selected: ${envLabel}"
             }
 
-            if (branchName != 'master') {
 
-                stage('Build') {
-                    echo 'Building dependencies...'
-                    sh 'npm i'
-                }
+            withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
+                withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
+                    withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
+                        withNPM(npmrcConfig: 'my-custom-npmrc') {
 
-                if (branchType in params.testing.predeploy.unitTesting) {
-                    stage('Test') {
+                            if (branchName != 'master') {
 
-
-                        echo 'Installing jest'
-
-                            sh 'npm i -D jest'
-
-
-                        echo 'Installing jest-sonar-reporter'
-
-                            sh 'npm i -D jest-sonar-reporter'
-
-
-                        echo 'Testing...'
-
-                            sh 'npm test'
-
-                    }
-                } else {
-                    echo "Skipping unit tests..."
-                }
-
-
-                if (branchType in params.testing.predeploy.sonarQube) {
-
-                    stage('SonarQube') {
-                        echo "Running SonarQube..."
-
-
-                        // Jenkinsfile
-                        isSonarProjectFile = fileExists sonarProjectPath
-                        echo "isSonarProjectFile : ${isSonarProjectFile}"
-
-                        def sonar_project_key = packageName + "-" + branchNameHY
-                        def sonar_project_name = packageName + "-" + branchNameHY
-
-                        echo "sonar_project_key: ${sonar_project_key}"
-                        echo "sonar_project_name: ${sonar_project_name}"
-
-                        // requires SonarQube Scanner 3.1+
-                        def scannerHome = tool 'SonarQube Scanner 3.1.0'
-
-                        if (isSonarProjectFile) {
-                            //sonar-project.properties contains properties for SonarQube
-
-                            echo 'sonarQube parameters extracted from sonar-project.properties file'
-
-                            withSonarQubeEnv('sonarqube') {
-                                sh "${scannerHome}/bin/sonar-scanner -X -Dsonar.projectKey=${sonar_project_key} -Dsonar.projectName=${sonar_project_name}"
-                            }
-
-                        } else {
-
-                            if (params.testing.predeploy.sonarQubeAnalisis.sonarSources
-                                && params.testing.predeploy.sonarQubeAnalisis.sonarTests
-                                && params.testing.predeploy.sonarQubeAnalisis.sonarTestExecutionReportPath
-                                && params.testing.predeploy.sonarQubeAnalisis.sonarCoverageReportPath
-                                && params.testing.predeploy.sonarQubeAnalisis.sonarExclusions) {
-
-                                //Pipeline parameters contains properties for SonarQube.
-                                def sonarSources = params.testing.predeploy.sonarQubeAnalisis.sonarSources
-                                def sonarTests = params.testing.predeploy.sonarQubeAnalisis.sonarTests
-                                def sonarTestExecutionReportPath = params.testing.predeploy.sonarQubeAnalisis.sonarTestExecutionReportPath
-                                def sonarCoverageReportPath = params.testing.predeploy.sonarQubeAnalisis.sonarCoverageReportPath
-                                def sonarExclusions = params.testing.predeploy.sonarQubeAnalisis.sonarExclusions
-
-                                echo 'sonarQube parameters extracted from pipeline parameters:'
-
-                                echo "sonarSources: ${sonarSources}"
-                                echo "sonarTests: ${sonarTests}"
-                                echo "sonarTestExecutionReportPath: ${sonarTestExecutionReportPath}"
-                                echo "sonarCoverageReportPath: ${sonarCoverageReportPath}"
-                                echo "sonarExclusions: ${sonarExclusions}"
-
-                                withSonarQubeEnv('sonarqube') {
-                                    sh "${scannerHome}/bin/sonar-scanner -X -Dsonar.projectKey=${sonar_project_key} -Dsonar.projectName=${sonar_project_name} -Dsonar.sources=${sonarSources} -Dsonar.tests=${sonarTests} -Dsonar.testExecutionReportPaths=${sonarTestExecutionReportPath} -Dsonar.javascript.lcov.reportPaths=${sonarCoverageReportPath} -Dsonar.exclusions=${sonarExclusions}"
+                                stage('Build') {
+                                    echo 'Building dependencies...'
+                                    sh 'npm i'
                                 }
 
-                            } else {
-                                //Failed status
-                                currentBuild.result = NodejsConstants.FAILURE_BUILD_RESULT
-                                throw new hudson.AbortException("A mandatory sonarQube parameter has not found. A sonar-project.properties OR sonarQube pipeline parameters are mandatory. The mandatory properties on sonar-project.properties are sonar.sources, sonar.tests, sonar.testExecutionReportPaths, sonar.javascript.lcov.reportPaths and sonar.exclusions. The mandatory params.testing.predeploy.sonarQubeAnalisis parameters of pipeline are: sonarSources, sonarTests, sonarTestExecutionReportPath. sonarCoverageReportPath amd sonarExclusions")
-
-                            }
-
-                        }
-
-                    }
-
-                } else {
-                    echo "Skipping Running SonarQube..."
-                }
+                                if (branchType in params.testing.predeploy.unitTesting) {
+                                    stage('Test') {
 
 
-                if (branchType in params.npmRegistryDeploy) {
+                                        echo 'Installing jest'
 
-                    stage('Artifact Registry Publish') {
-                        echo "Publishing artifact to a NPM registry"
+                                        sh 'npm i -D jest'
 
-                        withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
-                            withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
-                                withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
-                                    withNPM(npmrcConfig: 'my-custom-npmrc') {
+
+                                        echo 'Installing jest-sonar-reporter'
+
+                                        sh 'npm i -D jest-sonar-reporter'
+
+
+                                        echo 'Testing...'
+
+                                        sh 'npm test'
+
+                                    }
+                                } else {
+                                    echo "Skipping unit tests..."
+                                }
+
+
+                                if (branchType in params.testing.predeploy.sonarQube) {
+
+                                    stage('SonarQube') {
+                                        echo "Running SonarQube..."
+
+                                        // Jenkinsfile
+                                        isSonarProjectFile = fileExists sonarProjectPath
+                                        echo "isSonarProjectFile : ${isSonarProjectFile}"
+
+                                        def sonar_project_key = packageName + "-" + branchNameHY
+                                        def sonar_project_name = packageName + "-" + branchNameHY
+
+                                        echo "sonar_project_key: ${sonar_project_key}"
+                                        echo "sonar_project_name: ${sonar_project_name}"
+
+                                        // requires SonarQube Scanner 3.1+
+                                        def scannerHome = tool 'SonarQube Scanner 3.1.0'
+
+                                        if (isSonarProjectFile) {
+                                            //sonar-project.properties contains properties for SonarQube
+
+                                            echo 'sonarQube parameters extracted from sonar-project.properties file'
+
+                                            withSonarQubeEnv('sonarqube') {
+                                                sh "${scannerHome}/bin/sonar-scanner -X -Dsonar.projectKey=${sonar_project_key} -Dsonar.projectName=${sonar_project_name}"
+                                            }
+
+                                        } else {
+
+                                            if (params.testing.predeploy.sonarQubeAnalisis.sonarSources
+                                                    && params.testing.predeploy.sonarQubeAnalisis.sonarTests
+                                                    && params.testing.predeploy.sonarQubeAnalisis.sonarTestExecutionReportPath
+                                                    && params.testing.predeploy.sonarQubeAnalisis.sonarCoverageReportPath
+                                                    && params.testing.predeploy.sonarQubeAnalisis.sonarExclusions) {
+
+                                                //Pipeline parameters contains properties for SonarQube.
+                                                def sonarSources = params.testing.predeploy.sonarQubeAnalisis.sonarSources
+                                                def sonarTests = params.testing.predeploy.sonarQubeAnalisis.sonarTests
+                                                def sonarTestExecutionReportPath = params.testing.predeploy.sonarQubeAnalisis.sonarTestExecutionReportPath
+                                                def sonarCoverageReportPath = params.testing.predeploy.sonarQubeAnalisis.sonarCoverageReportPath
+                                                def sonarExclusions = params.testing.predeploy.sonarQubeAnalisis.sonarExclusions
+
+                                                echo 'sonarQube parameters extracted from pipeline parameters:'
+
+                                                echo "sonarSources: ${sonarSources}"
+                                                echo "sonarTests: ${sonarTests}"
+                                                echo "sonarTestExecutionReportPath: ${sonarTestExecutionReportPath}"
+                                                echo "sonarCoverageReportPath: ${sonarCoverageReportPath}"
+                                                echo "sonarExclusions: ${sonarExclusions}"
+
+                                                withSonarQubeEnv('sonarqube') {
+                                                    sh "${scannerHome}/bin/sonar-scanner -X -Dsonar.projectKey=${sonar_project_key} -Dsonar.projectName=${sonar_project_name} -Dsonar.sources=${sonarSources} -Dsonar.tests=${sonarTests} -Dsonar.testExecutionReportPaths=${sonarTestExecutionReportPath} -Dsonar.javascript.lcov.reportPaths=${sonarCoverageReportPath} -Dsonar.exclusions=${sonarExclusions}"
+                                                }
+
+                                            } else {
+                                                //Failed status
+                                                currentBuild.result = NodejsConstants.FAILURE_BUILD_RESULT
+                                                throw new hudson.AbortException("A mandatory sonarQube parameter has not found. A sonar-project.properties OR sonarQube pipeline parameters are mandatory. The mandatory properties on sonar-project.properties are sonar.sources, sonar.tests, sonar.testExecutionReportPaths, sonar.javascript.lcov.reportPaths and sonar.exclusions. The mandatory params.testing.predeploy.sonarQubeAnalisis parameters of pipeline are: sonarSources, sonarTests, sonarTestExecutionReportPath. sonarCoverageReportPath amd sonarExclusions")
+
+                                            }
+
+                                        }
+
+                                    }
+
+                                } else {
+                                    echo "Skipping Running SonarQube..."
+                                }
+
+
+                                if (branchType in params.npmRegistryDeploy) {
+
+                                    stage('Artifact Registry Publish') {
+                                        echo "Publishing artifact to a NPM registry"
 
                                         echo 'Get NPM config registry'
                                         sh 'npm config get registry'
@@ -487,55 +487,50 @@ def runNodejsGenericJenkinsfile() {
 
                                         echo 'Publish package on Artifactory NPM registry'
                                         sh 'npm publish'
+
+
+                                        echo "Setting source code to build from URL (build from registry package)"
+                                        echo "Source URL: ${projectURL} --> ${build_from_registry_url}"
+                                        projectURL = build_from_registry_url
+                                        echo "new projectURL: ${projectURL}"
+                                        echo "Setting source code to build from branch (build from registry package)"
+                                        echo "Source branch: ${branchName} --> ${build_from_artifact_branch}"
+                                        branchName = build_from_artifact_branch
+                                        echo "new branchName: ${branchName}"
                                     }
+
+                                } else {
+                                    echo "******* WARNING. PACKAGE NOT PUBLISHED ON ANY NPM REGISTRY ******* "
+                                    echo "The source code will be taken from a code repository, not from an artifact repository."
+                                    echo "Source URL: ${projectURL}"
+                                    echo "Source branch: ${branchName}"
                                 }
-                            }
-                        }
 
-                        echo "Setting source code to build from URL (build from registry package)"
-                        echo "Source URL: ${projectURL} --> ${build_from_registry_url}"
-                        projectURL = build_from_registry_url
-                        echo "new projectURL: ${projectURL}"
-                        echo "Setting source code to build from branch (build from registry package)"
-                        echo "Source branch: ${branchName} --> ${build_from_artifact_branch}"
-                        branchName = build_from_artifact_branch
-                        echo "new branchName: ${branchName}"
-                    }
+                            } else {
 
-                } else {
-                    echo "******* WARNING. PACKAGE NOT PUBLISHED ON ANY NPM REGISTRY ******* "
-                    echo "The source code will be taken from a code repository, not from an artifact repository."
-                    echo "Source URL: ${projectURL}"
-                    echo "Source branch: ${branchName}"
-                }
+                                if (branchType in params.npmRegistryDeploy) {
+                                    stage('Check published package on NPM registry') {
 
-            } else {
-
-                if (branchType in params.npmRegistryDeploy) {
-                    stage('Check published package on NPM registry') {
-
-                        try {
-                            withCredentials([string(credentialsId: "${artifactoryNPMAuthCredential}", variable: 'ARTIFACTORY_NPM_AUTH')]) {
-                                withCredentials([string(credentialsId: "${artifactoryNPMEmailAuthCredential}", variable: 'ARTIFACTORY_NPM_EMAIL_AUTH')]) {
-                                    withEnv(["NPM_AUTH=${ARTIFACTORY_NPM_AUTH}", "NPM_AUTH_EMAIL=${ARTIFACTORY_NPM_EMAIL_AUTH}"]) {
-                                        withNPM(npmrcConfig: 'my-custom-npmrc') {
+                                        try {
                                             echo 'Get tarball location of package ...'
-                                            tarball_script = $/eval "npm view  ${packageTag} dist.tarball | grep '${
+                                            tarball_script = $/eval "npm view  ${
+                                                packageTag
+                                            } dist.tarball | grep '${
                                                 packageTarball
                                             }'"/$
                                             echo "${tarball_script}"
                                             def tarball_view = sh(script: "${tarball_script}", returnStdout: true).toString().trim()
                                             echo "${tarball_view}"
+                                         } catch (exc) {
+                                            echo 'There is an error on retrieving the tarball location'
+                                            def exc_message = exc.message
+                                            echo "${exc_message}"
+                                            currentBuild.result = "FAILED"
+                                            throw new hudson.AbortException("Error checking existence of package on NPM registry")
                                         }
                                     }
                                 }
                             }
-                        } catch (exc) {
-                            echo 'There is an error on retrieving the tarball location'
-                            def exc_message = exc.message
-                            echo "${exc_message}"
-                            currentBuild.result = "FAILED"
-                            throw new hudson.AbortException("Error checking existence of package on NPM registry")
                         }
                     }
                 }
