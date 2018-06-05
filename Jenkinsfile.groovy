@@ -1,8 +1,6 @@
 #!/usr/bin/groovy
 import com.evobanco.NodejsUtils
 import com.evobanco.NodejsConstants
-import java.text.SimpleDateFormat
-import java.util.Date
 
 def runNodejsGenericJenkinsfile() {
 
@@ -11,7 +9,6 @@ def runNodejsGenericJenkinsfile() {
     def npmRepositoryURL = 'http://10.6.14.20:8081/artifactory/api/npm/npm-repo/'
     def npmLocalRepositoryURL = 'http://10.6.14.20:8081/artifactory/api/npm/npm-local/'
 
-    def sonarQube = 'http://sonarqube:9000'
     def openshiftURL = 'https://openshift.grupoevo.corp:8443'
     def openshiftCredential = 'openshift'
     def registry = '172.20.253.34'
