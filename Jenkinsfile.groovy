@@ -667,6 +667,7 @@ def runNodejsGenericJenkinsfile() {
                     package_tarball = packageTarball
                     is_scoped_package = isScopedPackage
                     artifactoryNPMRepo = npmRepositoryURL
+                    artifactoryNPMAuth = artifactoryNPMEmailAuthCredential
                     artifactoryNPMEmailAuth = artifactoryNPMEmailAuthCredential
                 }
 
