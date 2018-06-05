@@ -49,8 +49,6 @@ objects:
       type: Source
       sourceStrategy:
         env:
-        - name: ARTIFACTORY_TOKEN
-          value: ${ARTIFACTORY_TOKEN}
         - name: NODEJS_PACKAGE_TAG
           value: ${NODEJS_PACKAGE_TAG}
         - name: NODEJS_PACKAGE_TARBALL
@@ -59,6 +57,10 @@ objects:
           value: ${NODEJS_IS_SCOPED_PACKAGE}
         - name: ARTIFACTORY_NPM_REPO
           value: ${ARTIFACTORY_NPM_REPO}
+        - name: ARTIFACTORY_NPM_AUTH
+          value: ${ARTIFACTORY_NPM_AUTH}
+        - name: ARTIFACTORY_NPM_EMAIL_AUTH
+          value: ${ARTIFACTORY_NPM_EMAIL_AUTH}
         from:
           kind: ImageStreamTag
           name: nodejs:${NODEJS_VERSION}
@@ -205,9 +207,6 @@ parameters:
 - description: "Docker Registry"
   name: "DOCKER_REGISTRY"
   value: ""
-- description: "Artifactory Token"
-  name: "ARTIFACTORY_TOKEN"
-  value: ""
 - description: "WAR_FILE_URL"
   name: "WAR_FILE_URL"
   value: ""
@@ -246,4 +245,10 @@ parameters:
   value: "false"
 - description: "Artifactory NPM repository"
   name: "ARTIFACTORY_NPM_REPO"
+  value: ""
+- description: "Artifactory NPM Authorization Token"
+  name: "ARTIFACTORY_NPM_AUTH"
+  value: ""
+- description: "Artifactory NPM Email Authorization Token"
+  name: "ARTIFACTORY_NPM_EMAIL_AUTH"
   value: ""
