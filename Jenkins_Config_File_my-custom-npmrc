@@ -27,5 +27,6 @@
 ; Default: true
 ; shrinkwrap =
 
-
- //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+_auth = ${NPM_AUTH}
+always-auth = true
+email = ${NPM_AUTH_EMAIL}

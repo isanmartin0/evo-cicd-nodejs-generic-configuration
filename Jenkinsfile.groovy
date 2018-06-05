@@ -472,7 +472,7 @@ def runNodejsGenericJenkinsfile() {
                                 }
 
 
-                                if (branchType in params.npmRegistryDeploy) {
+                                if (branchType in params.npmRegistryPublish) {
 
                                     stage('Artifact Registry Publish') {
                                         echo "Publishing artifact to a NPM registry"
