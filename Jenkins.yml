@@ -10,9 +10,9 @@ useAlternateNpmRun: false
 alternateNpmRunScript: script_alt
 
 ports:
-  useSpecificPort: true
-  portNumber: 3000
-  createPortEnvironmentVariable: true
+  useSpecificPort: false
+  portNumber: 8080
+  createPortEnvironmentVariable: false
 
 environmentVariables:
   # environmentVariable1: value1
@@ -30,16 +30,15 @@ timeoutConfirmDeployUnit: MINUTES
 testing:
   predeploy:
     unitTesting:
-     # - feature
+      - feature
       - develop
-     # - release
+      - release
       - hotfix
-      - master
     sonarQube:
-      # - feature
-      # - develop
-      # - release
-      # - hotfix
+      - feature
+      - develop
+      - release
+      - hotfix
 
   postdeploy:
     smokeTesting:
