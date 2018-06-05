@@ -47,7 +47,6 @@ def runNodejsGenericJenkinsfile() {
     def credentialsIdGenericPGC = '4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials of the generic configuration project
     def jenkinsYamlGenericPath = relativeTargetDirGenericPGC + 'Jenkins.yml'
     def openshiftNodejsTemplateGenericPath = relativeTargetDirGenericPGC + 'kube/nodejs_template.yaml'
-    def isGenericJenkinsYaml = false
 
 
     def packageJSON
@@ -86,8 +85,6 @@ def runNodejsGenericJenkinsfile() {
     def nodeJS_6_installation = "Node-6.11.3"
     def nodeJS_pipeline_installation = ""
     int image_stream_nodejs_version = image_stream_nodejs_version_default
-
-    def NPM_TOKEN_CREDENTIALS = "2631fdfc-50c2-458a-b257-8571a4038b38"
     def sonarProjectPath = "sonar-project.properties"
 
     echo "BEGIN NODE.JS GENERIC CONFIGURATION PROJECT (PGC)"
@@ -667,7 +664,7 @@ def runNodejsGenericJenkinsfile() {
                     package_tarball = packageTarball
                     is_scoped_package = isScopedPackage
                     artifactoryNPMRepo = npmRepositoryURL
-                    artifactoryNPMAuth = artifactoryNPMEmailAuthCredential
+                    artifactoryNPMAuth = artifactoryNPMAuthCredential
                     artifactoryNPMEmailAuth = artifactoryNPMEmailAuthCredential
                 }
 
