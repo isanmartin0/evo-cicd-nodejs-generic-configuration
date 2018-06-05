@@ -60,7 +60,7 @@ def runNodejsGenericJenkinsfile() {
     int daysOldBuildsToKeep = 0
 
     //Taurus parameters
-    def taurus_test_base_path = 'src/test/taurus'
+    def taurus_test_base_path = 'taurus'
     def acceptance_test_path = '/acceptance_test/'
     def performance_test_path = '/performance_test/'
     def smoke_test_path = '/smoke_test/'
