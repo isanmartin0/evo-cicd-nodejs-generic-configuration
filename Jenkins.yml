@@ -49,17 +49,17 @@ testing:
 
   postdeploy:
     smokeTesting:
-      - release
-      - master
+      # - release
+      # - master
     securityTesting:
-      - develop
-      - release
+      # - develop
+      # - release
     performanceTesting:
-      - release
-      - hotfix
+      # - release
+      # - hotfix
     acceptanceTesting:
-      - develop
-      - release
+      # - develop
+      # - release
 
 notifications:
   branch:
