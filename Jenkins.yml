@@ -40,6 +40,13 @@ testing:
       - release
       - hotfix
 
+    sonarQubeAnalisis:
+      sonarSources: server
+      sonarTests: __tests__
+      sonarTestExecutionReportPath: test-report.xml
+      sonarCoverageReportPath: coverage/lcov.info
+      sonarExclusions: node_modules/**
+
   postdeploy:
     smokeTesting:
       - release
