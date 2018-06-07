@@ -124,7 +124,9 @@ def runNodejsGenericJenkinsfile() {
             echo "isScopedPackage: ${isScopedPackage}"
 
             if (isScopedPackage) {
-                packageName = utils.getUnscopedElement(packageJSON.name)
+                packageScope = utils.getPackageScope(packageName)
+                echo "packageScope: ${packageScope}"
+                packageName = packageScope + "-" + utils.getUnscopedElement(packageJSON.name)
                 echo "packageName: ${packageName}"
                 packageVersion = packageJSON.version
                 echo "packageVersion: ${packageVersion}"
@@ -132,8 +134,7 @@ def runNodejsGenericJenkinsfile() {
                 echo "packageTag: ${packageTag}"
                 packageTarball = utils.getUnscopedElement(utils.getPackageTarball(packageName, packageVersion))
                 echo "packageTarball: ${packageTarball}"
-                packageScope = utils.getPackageScope(packageName)
-                echo "packageScope: ${packageScope}"
+
             } else {
                 packageName = packageJSON.name
                 echo "packageName: ${packageName}"
@@ -418,14 +419,8 @@ def runNodejsGenericJenkinsfile() {
                                     isSonarProjectFile = fileExists sonarProjectPath
                                     echo "isSonarProjectFile : ${isSonarProjectFile}"
 
-                                    if (isScopedPackage) {
-                                        def sonar_project_key = packageScope + "_" + packageName + "-" + branchNameHY
-                                        def sonar_project_name = packageScope + "_" + packageName + "-" + branchNameHY
-                                    } else {
-                                        def sonar_project_key = packageName + "-" + branchNameHY
-                                        def sonar_project_name = packageName + "-" + branchNameHY
-                                    }
-
+                                    def sonar_project_key = packageName + "-" + branchNameHY
+                                    def sonar_project_name = packageName + "-" + branchNameHY
 
                                     echo "sonar_project_key: ${sonar_project_key}"
                                     echo "sonar_project_name: ${sonar_project_name}"
