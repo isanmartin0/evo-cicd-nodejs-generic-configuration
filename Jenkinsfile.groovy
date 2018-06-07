@@ -119,21 +119,32 @@ def runNodejsGenericJenkinsfile() {
 
             packageJSON = readJSON file: 'package.json'
 
-            packageName = packageJSON.name
-            echo "packageName: ${packageName}"
-            packageVersion = packageJSON.version
-            echo "packageVersion: ${packageVersion}"
-            packageTag = utils.getPackageTag(packageName, packageVersion)
-            echo "packageTag: ${packageTag}"
-            packageTarball = utils.getPackageTarball(packageName, packageVersion)
-            echo "packageTarball: ${packageTarball}"
+
             isScopedPackage = utils.isScopedPackage(packageName)
             echo "isScopedPackage: ${isScopedPackage}"
 
             if (isScopedPackage) {
+                packageName = utils.getUnscopedElement(packageJSON.name)
+                echo "packageName: ${packageName}"
+                packageVersion = packageJSON.version
+                echo "packageVersion: ${packageVersion}"
+                packageTag = utils.getUnscopedElement(utils.getPackageTag(packageName, packageVersion))
+                echo "packageTag: ${packageTag}"
+                packageTarball = utils.getUnscopedElement(utils.getPackageTarball(packageName, packageVersion))
+                echo "packageTarball: ${packageTarball}"
                 packageScope = utils.getPackageScope(packageName)
                 echo "packageScope: ${packageScope}"
+            } else {
+                packageName = packageJSON.name
+                echo "packageName: ${packageName}"
+                packageVersion = packageJSON.version
+                echo "packageVersion: ${packageVersion}"
+                packageTag = utils.getPackageTag(packageName, packageVersion)
+                echo "packageTag: ${packageTag}"
+                packageTarball = utils.getPackageTarball(packageName, packageVersion)
+                echo "packageTarball: ${packageTarball}"
             }
+
 
             try {
                 def parallelConfigurationProject = utils.getParallelConfigurationProjectURL(projectURL)
@@ -279,7 +290,7 @@ def runNodejsGenericJenkinsfile() {
 
             }
 
-            stage('Node initialize') {
+            stage('NodeJS initialization') {
                 echo 'Node initializing...'
 
                 /*************************************************************
