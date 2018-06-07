@@ -120,11 +120,11 @@ def runNodejsGenericJenkinsfile() {
             packageJSON = readJSON file: 'package.json'
 
 
-            isScopedPackage = utils.isScopedPackage(packageName)
+            isScopedPackage = utils.isScopedPackage(packageJSON.name)
             echo "isScopedPackage: ${isScopedPackage}"
 
             if (isScopedPackage) {
-                packageScope = utils.getPackageScope(packageName)
+                packageScope = utils.getPackageScope(packageJSON.name)
                 echo "packageScope: ${packageScope}"
                 packageName = packageScope + "-" + utils.getUnscopedElement(packageJSON.name)
                 echo "packageName: ${packageName}"
