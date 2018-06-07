@@ -418,8 +418,14 @@ def runNodejsGenericJenkinsfile() {
                                     isSonarProjectFile = fileExists sonarProjectPath
                                     echo "isSonarProjectFile : ${isSonarProjectFile}"
 
-                                    def sonar_project_key = packageName + "-" + branchNameHY
-                                    def sonar_project_name = packageName + "-" + branchNameHY
+                                    if (isScopedPackage) {
+                                        def sonar_project_key = packageScope + "-" + packageName + "-" + branchNameHY
+                                        def sonar_project_name = packageScope + "-" + packageName + "-" + branchNameHY
+                                    } else {
+                                        def sonar_project_key = packageName + "-" + branchNameHY
+                                        def sonar_project_name = packageName + "-" + branchNameHY
+                                    }
+
 
                                     echo "sonar_project_key: ${sonar_project_key}"
                                     echo "sonar_project_name: ${sonar_project_name}"
