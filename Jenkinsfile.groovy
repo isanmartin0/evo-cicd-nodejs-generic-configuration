@@ -130,9 +130,9 @@ def runNodejsGenericJenkinsfile() {
                 echo "packageName: ${packageName}"
                 packageVersion = packageJSON.version
                 echo "packageVersion: ${packageVersion}"
-                packageTag = utils.getUnscopedElement(utils.getPackageTag(packageJSON.name, packageVersion))
+                packageTag = utils.getPackageTag(packageJSON.name, packageVersion)
                 echo "packageTag: ${packageTag}"
-                packageTarball = utils.getUnscopedElement(utils.getPackageTarball(packageJSON.name, packageVersion))
+                packageTarball = utils.getPackageTarball(packageJSON.name, packageVersion)
                 echo "packageTarball: ${packageTarball}"
 
             } else {
