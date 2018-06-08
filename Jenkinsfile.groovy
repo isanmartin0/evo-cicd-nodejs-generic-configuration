@@ -126,7 +126,7 @@ def runNodejsGenericJenkinsfile() {
             if (isScopedPackage) {
                 packageScope = utils.getPackageScope(packageJSON.name)
                 echo "packageScope: ${packageScope}"
-                packageName = packageScope + "-" + utils.getUnscopedElement(packageJSON.name)
+                packageName = utils.getProject(packageJSON.name)
                 echo "packageName: ${packageName}"
                 packageVersion = packageJSON.version
                 echo "packageVersion: ${packageVersion}"
