@@ -137,6 +137,7 @@ def runNodejsGenericJenkinsfile() {
 
             } else {
                 packageName = packageJSON.name
+                packageName = packageName.toLowerCase()
                 echo "packageName: ${packageName}"
                 packageVersion = packageJSON.version
                 echo "packageVersion: ${packageVersion}"
