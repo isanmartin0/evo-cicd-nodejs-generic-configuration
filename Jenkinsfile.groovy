@@ -493,7 +493,12 @@ def runNodejsGenericJenkinsfile() {
 
                                     try {
                                         echo 'Publish package on Artifactory NPM registry'
-                                        sh "npm publish --registry ${npmLocalRepositoryURL}"
+
+                                        if (isScopedPackage) {
+                                            sh "npm publish --registry ${npmLocalRepositoryURL} --access=public"
+                                        } else {
+                                            sh "npm publish --registry ${npmLocalRepositoryURL}"
+                                        }
                                     } catch (exc) {
                                         echo 'There is an error on publish package'
                                         def exc_message = exc.message
