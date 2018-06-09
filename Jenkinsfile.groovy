@@ -119,33 +119,22 @@ def runNodejsGenericJenkinsfile() {
 
             packageJSON = readJSON file: 'package.json'
 
-
             isScopedPackage = utils.isScopedPackage(packageJSON.name)
             echo "isScopedPackage: ${isScopedPackage}"
 
             if (isScopedPackage) {
                 packageScope = utils.getPackageScope(packageJSON.name)
                 echo "packageScope: ${packageScope}"
-                packageName = utils.getProject(packageJSON.name)
-                echo "packageName: ${packageName}"
-                packageVersion = packageJSON.version
-                echo "packageVersion: ${packageVersion}"
-                packageTag = utils.getPackageTag(packageJSON.name, packageVersion)
-                echo "packageTag: ${packageTag}"
-                packageTarball = utils.getPackageTarball(packageJSON.name, packageVersion)
-                echo "packageTarball: ${packageTarball}"
-
-            } else {
-                packageName = packageJSON.name
-                packageName = packageName.toLowerCase()
-                echo "packageName: ${packageName}"
-                packageVersion = packageJSON.version
-                echo "packageVersion: ${packageVersion}"
-                packageTag = utils.getPackageTag(packageName, packageVersion)
-                echo "packageTag: ${packageTag}"
-                packageTarball = utils.getPackageTarball(packageName, packageVersion)
-                echo "packageTarball: ${packageTarball}"
             }
+
+            packageName = utils.getProject(packageJSON.name)
+            echo "packageName: ${packageName}"
+            packageVersion = packageJSON.version
+            echo "packageVersion: ${packageVersion}"
+            packageTag = utils.getPackageTag(packageJSON.name, packageVersion)
+            echo "packageTag: ${packageTag}"
+            packageTarball = utils.getPackageTarball(packageJSON.name, packageVersion)
+            echo "packageTarball: ${packageTarball}"
 
 
             try {
