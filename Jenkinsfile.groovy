@@ -488,7 +488,7 @@ def runNodejsGenericJenkinsfile() {
                                         echo 'Publish package on Artifactory NPM registry'
 
                                         if (isScopedPackage) {
-                                            sh "npm publish --registry ${npmLocalRepositoryURL} --access=public"
+                                            sh "npm publish --registry ${npmLocalRepositoryURL}"
                                         } else {
                                             sh "npm publish --registry ${npmLocalRepositoryURL}"
                                         }
