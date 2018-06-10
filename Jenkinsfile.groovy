@@ -136,7 +136,7 @@ def runNodejsGenericJenkinsfile() {
             echo "packageTag: ${packageTag}"
             packageTarball = utils.getPackageTarball(packageJSON.name, packageVersion)
             echo "packageTarball: ${packageTarball}"
-            packageViewTarball = utilsgetPackageViewTarball(packageJSON.name, packageVersion)
+            packageViewTarball = utils.getPackageViewTarball(packageJSON.name, packageVersion)
             echo "packageViewTarball: ${packageViewTarball}"
 
 
