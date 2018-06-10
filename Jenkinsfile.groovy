@@ -52,6 +52,7 @@ def runNodejsGenericJenkinsfile() {
     String packageVersion
     String packageTag
     String packageTarball
+    String packageViewTarball
     boolean isScopedPackage = false
     String packageScope
 
@@ -135,6 +136,8 @@ def runNodejsGenericJenkinsfile() {
             echo "packageTag: ${packageTag}"
             packageTarball = utils.getPackageTarball(packageJSON.name, packageVersion)
             echo "packageTarball: ${packageTarball}"
+            packageViewTarball = getPackageViewTarball(packageJSON.name, packageVersion)
+            echo "packageViewTarball: ${packageViewTarball}"
 
 
             try {
@@ -524,7 +527,7 @@ def runNodejsGenericJenkinsfile() {
                                     tarball_script = $/eval "npm view  ${
                                         packageTag
                                     } dist.tarball | grep '${
-                                        packageTarball
+                                        packageViewTarball
                                     }'"/$
                                     echo "${tarball_script}"
                                     def tarball_view = sh(script: "${tarball_script}", returnStdout: true).toString().trim()
