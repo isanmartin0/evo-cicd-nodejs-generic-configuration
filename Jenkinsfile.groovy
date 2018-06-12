@@ -1,4 +1,7 @@
 #!/usr/bin/groovy
+
+@Library('msa-cicd-nodejs-jenkins-shared-libs') _
+
 import com.evobanco.NodejsUtils
 import com.evobanco.NodejsConstants
 
