@@ -43,7 +43,6 @@ def runNodejsGenericJenkinsfile() {
     def branchGenericPGC = 'master'
     def credentialsIdGenericPGC = '4b18ea85-c50b-40f4-9a81-e89e44e20178' //credentials of the generic configuration project
     def jenkinsYamlGenericPath = relativeTargetDirGenericPGC + 'Jenkins.yml'
-    def openshiftNodejsTemplateGenericPath = relativeTargetDirGenericPGC + 'kube/nodejs_template.yaml'
 
 
     def packageJSON
@@ -657,7 +656,7 @@ def runNodejsGenericJenkinsfile() {
                     environment = envLabel
                     jenkinsNS = jenkinsNamespace
                     artCredential = artifactoryCredential
-                    template = openshiftNodejsTemplateGenericPath
+                    template = params.openshift.templatePath
                     branchHY = branchNameHY
                     branch_type = branchType
                     dockerRegistry = registry
