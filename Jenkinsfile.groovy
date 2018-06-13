@@ -178,7 +178,23 @@ def runNodejsGenericJenkinsfile() {
                 }
 
                 // Openshift template (template.yaml)
-                isPPCOpenshiftTemplate = fileExists openshiftNodejsTemplatePathPPC
+
+
+                if (isPPCJenkinsYaml) {
+                    //Take parameters of the parallel project configuration (PPC)
+                    params = readYaml  file: jenkinsYamlPathPPC
+                    echo "Using Jenkins.yml from Node.js parallel project configuration (PPC)"
+
+                    //The template is provided by parallel project configuration (PPC)
+                    params.openshift.templatePath = relativeTargetDirPPC + params.openshift.templatePath
+
+                    echo "params.openshift.templatePath: ${params.openshift.templatePath}"
+
+                    isPPCOpenshiftTemplate = fileExists params.openshift.templatePath
+                } else {
+                    isPPCOpenshiftTemplate = fileExists openshiftNodejsTemplatePathPPC
+                }
+
 
                 if (isPPCOpenshiftTemplate) {
                     echo "Node.js Parallel configuration project Openshift template... FOUND"
