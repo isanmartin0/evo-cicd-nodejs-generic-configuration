@@ -1,5 +1,5 @@
 openshift:
-  templatePath: kube/xnodejs_template.yaml
+  templatePath: kube/nodejs_template.yaml
 
 imageStreamNodejsVersion: 8
 devMode: false
