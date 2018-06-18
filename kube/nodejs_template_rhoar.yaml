@@ -1,0 +1,259 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: Nodejs-template
+  annotations:
+    openshift.io/display-name: Node.js
+    description: A Node.js application with no database.
+    tags: nodejs
+    iconClass: icon-nodejs
+    openshift.io/long-description: This template defines resources needed to develop a NodeJS application, including a build configuration and application deployment configuration.  It does not include a database.
+    openshift.io/provider-display-name: Red Hat, Inc.
+    openshift.io/support-url: https://access.redhat.com
+    template.openshift.io/bindable: "false"
+message: "The following service(s) have been created in your project: ${PROJECT}."
+labels:
+  template: Nodejs-template
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+      description: Keeps track of changes in the application image
+    generation: 1
+    labels:
+      app: ${PROJECT}
+    name: ${PROJECT}
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+      description: Defines how to build the application
+      template.alpha.openshift.io/wait-for-ready: "true"
+    labels:
+      app: ${PROJECT}
+    name: ${PROJECT}
+  spec:
+    nodeSelector: null
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: ${SOURCE_REPOSITORY_BRANCH}
+        uri: ${SOURCE_REPOSITORY_URL}
+      type: Git
+    strategy:
+      type: Source
+      sourceStrategy:
+        env:
+        - name: NODEJS_PACKAGE_TAG
+          value: ${NODEJS_PACKAGE_TAG}
+        - name: NODEJS_PACKAGE_TARBALL
+          value: ${NODEJS_PACKAGE_TARBALL}
+        - name: NODEJS_IS_SCOPED_PACKAGE
+          value: ${NODEJS_IS_SCOPED_PACKAGE}
+        - name: ARTIFACTORY_NPM_REPO
+          value: ${ARTIFACTORY_NPM_REPO}
+        - name: ARTIFACTORY_NPM_AUTH
+          value: ${ARTIFACTORY_NPM_AUTH}
+        - name: ARTIFACTORY_NPM_EMAIL_AUTH
+          value: ${ARTIFACTORY_NPM_EMAIL_AUTH}
+        from:
+          kind: ImageStreamTag
+          name: rhoar-nodejs-10:10.2.1
+          namespace: openshift
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${PROJECT}:latest
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+      description: Defines how to deploy the application server
+      template.alpha.openshift.io/wait-for-ready: "true"
+    generation: 1
+    labels:
+      app: ${PROJECT}
+    name: ${PROJECT}
+  spec:
+    replicas: 1
+    selector:
+      app: ${PROJECT}
+      deploymentconfig: ${PROJECT}
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        labels:
+          app: ${PROJECT}
+          deploymentconfig: ${PROJECT}
+        name: ${PROJECT}
+      spec:
+        containers:
+        - env:
+          - name: "NPM_AUTH"
+            value: ${ARTIFACTORY_NPM_AUTH}
+          - name: "NPM_AUTH_EMAIL"
+            value: ${ARTIFACTORY_NPM_EMAIL_AUTH}
+          image: "${DOCKER_REGISTRY}:5000/${PROJECT}${BRANCH_NAME_HY_CONTAINER_IMAGE}/${PROJECT}:latest"
+          name: ${PROJECT}
+          ports:
+          - containerPort: ${{TARGET_PORT}}
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 1000Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          readinessProbe:
+            timeoutSeconds: 3
+            initialDelaySeconds: 3
+            httpGet:
+              path: /
+              port: ${{TARGET_PORT}}
+          livenessProbe:
+            timeoutSeconds: 3
+            initialDelaySeconds: 30
+            httpGet:
+              path: /
+              port: ${{TARGET_PORT}}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+      description: Exposes and load balances the application pods
+    labels:
+      app: ${PROJECT}
+    name: ${PROJECT}
+  spec:
+    ports:
+    - name: ${TARGET_PORT}-tcp
+      port: ${{TARGET_PORT}}
+      protocol: TCP
+      targetPort: ${{TARGET_PORT}}
+    selector:
+      app: ${PROJECT}
+      deploymentconfig: ${PROJECT}
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/host.generated: "true"
+    name: ${PROJECT}
+  spec:
+    host: "${PROJECT}${HOST_NAME}"
+    port:
+      targetPort: ${TARGET_PORT}-tcp
+    to:
+      kind: Service
+      name: ${PROJECT}
+      weight: 100
+    wildcardPolicy: None
+- apiVersion: extensions/v1beta1
+  kind: HorizontalPodAutoscaler
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    labels:
+      app: ${PROJECT}
+    name: ${PROJECT}
+  spec:
+    scaleRef:
+      kind: DeploymentConfig
+      name: ${PROJECT}
+      apiVersion: v1
+      subresource: scale
+    minReplicas: ${MIN_POD_REPLICAS}
+    maxReplicas: ${MAX_POD_REPLICAS}
+    cpuUtilization:
+      targetPercentage: 80
+parameters:
+- description: "Project name"
+  name: "PROJECT"
+  value: ""
+- description: "Branch name"
+  name: "BRANCH_NAME"
+  value: ""
+- description: "Branch name hyphenated"
+  name: "BRANCH_NAME_HY"
+  value: ""
+- description: "Branch name for container image hyphenated"
+  name: "BRANCH_NAME_HY_CONTAINER_IMAGE"
+  value: ""
+- description: "Docker Registry"
+  name: "DOCKER_REGISTRY"
+  value: ""
+- description: "WAR_FILE_URL"
+  name: "WAR_FILE_URL"
+  value: ""
+- description: "SOURCE_REPOSITORY_URL"
+  name: "SOURCE_REPOSITORY_URL"
+  value: ""
+- description: "SOURCE_REPOSITORY_BRANCH"
+  name: "SOURCE_REPOSITORY_BRANCH"
+  value: ""
+- description: "NODEJS_VERSION"
+  name: "NODEJS_VERSION"
+  value: ""
+- description: "EnvLabel"
+  name: "envLabel"
+  value: ""
+- description: "Host Name"
+  name: "HOST_NAME"
+  value: ""
+- description: "Minimum number of replicas of pods"
+  name: "MIN_POD_REPLICAS"
+  value: ""
+- description: "Maximum number of replicas of pods"
+  name: "MAX_POD_REPLICAS"
+  value: ""
+- description: "Target port of service"
+  name: "TARGET_PORT"
+  value: ""
+- description: "Node module tag"
+  name: "NODEJS_PACKAGE_TAG"
+  value: ""
+- description: "Node module tarball"
+  name: "NODEJS_PACKAGE_TARBALL"
+  value: ""
+- description: "Flag indicating a scoped package"
+  name: "NODEJS_IS_SCOPED_PACKAGE"
+  value: "false"
+- description: "Artifactory NPM repository"
+  name: "ARTIFACTORY_NPM_REPO"
+  value: ""
+- description: "Artifactory NPM Authorization Token"
+  name: "ARTIFACTORY_NPM_AUTH"
+  value: ""
+- description: "Artifactory NPM Email Authorization Token"
+  name: "ARTIFACTORY_NPM_EMAIL_AUTH"
+  value: ""
