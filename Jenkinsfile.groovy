@@ -533,7 +533,7 @@ def runNodejsGenericJenkinsfile() {
                                 echo "Source URL: ${projectURL}"
                                 echo "Source branch: ${branchName}"
                                 projectName = utils.getProjectName(packageJSON.name, branchType, branchNameHY)
-                                buildCredentialsId=utils.getBuildCredentialsId(projectName,buildCredentials)
+                                buildCredentialsId=utils.getBuildCredentialsId(projectName,'')
                             }
 
                         } else {
