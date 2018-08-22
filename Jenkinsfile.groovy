@@ -17,11 +17,12 @@ def runNodejsGenericJenkinsfile() {
     def artifactoryNPMEmailAuthCredential = 'artifactory-npm-email-auth'
     def jenkinsNamespace = 'cicd'
     def params
+    def buildCredentialsId
+    def projectName
     String envLabel
     String branchName
     String branchNameHY
     String branchType
-
 
     //Parallel project configuration (PPC) properties
     def branchPPC = 'master'
@@ -531,6 +532,8 @@ def runNodejsGenericJenkinsfile() {
                                 echo "The source code will be taken from a code repository, not from an artifact repository."
                                 echo "Source URL: ${projectURL}"
                                 echo "Source branch: ${branchName}"
+                                projectName = utils.getProjectName(packageJSON.name, branch_type, branchHY)
+                                buildCredentialsId=utils.getBuildCredentialsId(projectName,buildCredentials)
                             }
 
                         } else {
@@ -678,6 +681,7 @@ def runNodejsGenericJenkinsfile() {
                     dockerRegistry = registry
                     sourceRepositoryURL = projectURL
                     sourceRepositoryBranch = branchName
+                    sourceprivatey=buildCredentialsId
                     portNumber = port_number
                     nodejsVersion = image_stream_nodejs_version
                     package_tag = packageTag
