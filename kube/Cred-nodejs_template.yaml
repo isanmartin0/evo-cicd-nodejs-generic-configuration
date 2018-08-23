@@ -20,7 +20,7 @@ objects:
     ssh-privatekey: ${SOURCE_PRIVATEKEY} 
   kind: Secret
   metadata:
-    name: buildSecret
+    name: ${PROJECT}-buildsecret
   type: kubernetes.io/ssh-auth
 - apiVersion: v1
   kind: ImageStream
@@ -52,7 +52,7 @@ objects:
         ref: ${SOURCE_REPOSITORY_BRANCH}
         uri: ${SOURCE_REPOSITORY_URL}
       sourceSecret:
-        name: buildSecret
+        name: ${PROJECT}-buildsecret
       type: Git
     strategy:
       type: Source
