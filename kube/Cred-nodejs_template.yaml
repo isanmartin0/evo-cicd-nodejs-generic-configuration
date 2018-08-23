@@ -16,6 +16,13 @@ labels:
   template: Nodejs-template
 objects:
 - apiVersion: v1
+  data:
+    ssh-privatekey: ${SOURCE_PRIVATEKEY} 
+  kind: Secret
+  metadata:
+    name: buildSecret
+  type: kubernetes.io/ssh-auth
+- apiVersion: v1
   kind: ImageStream
   metadata:
     annotations:
@@ -44,6 +51,8 @@ objects:
       git:
         ref: ${SOURCE_REPOSITORY_BRANCH}
         uri: ${SOURCE_REPOSITORY_URL}
+      sourceSecret:
+        name: buildSecret
       type: Git
     strategy:
       type: Source
@@ -61,8 +70,6 @@ objects:
           value: ${ARTIFACTORY_NPM_AUTH}
         - name: ARTIFACTORY_NPM_EMAIL_AUTH
           value: ${ARTIFACTORY_NPM_EMAIL_AUTH}
-        - name: SOURCE_PRIVATEKEY
-          value: ${SOURCE_PRIVATEKEY}
         from:
           kind: ImageStreamTag
           name: nodejs:${NODEJS_VERSION}
