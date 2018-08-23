@@ -685,7 +685,7 @@ def runNodejsGenericJenkinsfile() {
                     dockerRegistry = registry
                     sourceRepositoryURL = projectURL
                     sourceRepositoryBranch = branchName
-                    sourceprivatey=buildCredentialsId
+                    sourceprivatekey = buildCredentialsId
                     portNumber = port_number
                     nodejsVersion = image_stream_nodejs_version
                     package_tag = packageTag
