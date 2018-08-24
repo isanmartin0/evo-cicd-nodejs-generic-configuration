@@ -18,7 +18,7 @@ def runNodejsGenericJenkinsfile() {
     def jenkinsNamespace = 'cicd'
     def params
     def buildCredentialsId
-    def projectName
+    def project
     String envLabel
     String branchName
     String branchNameHY
