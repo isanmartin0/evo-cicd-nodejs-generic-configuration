@@ -8,7 +8,6 @@ useNpmMirror: false
 npmMirror: https://registry.npmjs.org/
 useAlternateNpmRun: false
 alternateNpmRunScript: script_alt
-customCredentials: jucaf-nodejs-helloworld-build
 isPrivate: true
 
 ports:
