@@ -16,13 +16,6 @@ labels:
   template: Nodejs-template
 objects:
 - apiVersion: v1
-  data:
-    ssh-privatekey: ${SOURCE_PRIVATEKEY} 
-  kind: Secret
-  metadata:
-    name: ${PROJECT}-buildsecret
-  type: kubernetes.io/ssh-auth
-- apiVersion: v1
   kind: ImageStream
   metadata:
     annotations:
@@ -51,8 +44,6 @@ objects:
       git:
         ref: ${SOURCE_REPOSITORY_BRANCH}
         uri: ${SOURCE_REPOSITORY_URL}
-      sourceSecret:
-        name: ${PROJECT}-buildsecret
       type: Git
     strategy:
       type: Source
@@ -229,9 +220,6 @@ parameters:
   value: ""
 - description: "SOURCE_REPOSITORY_BRANCH"
   name: "SOURCE_REPOSITORY_BRANCH"
-  value: ""
-- description: "SOURCE_PRIVATEKEY"
-  name: "SOURCE_PRIVATEKEY"
   value: ""
 - description: "NODEJS_VERSION"
   name: "NODEJS_VERSION"
