@@ -533,9 +533,6 @@ def runNodejsGenericJenkinsfile() {
                                 echo "Source URL: ${projectURL}"
                                 echo "Source branch: ${branchName}"
                                 project = utils.getProject(packageJSON.name)
-                                echo "Project: ${project}"
-                                echo "Custom build credentials id: ${params.customCredentials}"
-                                echo "Private repo: ${params.isPrivate}"
                                 buildCredentialsId=utils.getBuildCredentialsId(project,params.customCredentials,params.isPrivate)
                                 echo "Credentials to use: ${buildCredentialsId}"
                             }
