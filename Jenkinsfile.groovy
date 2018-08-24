@@ -532,11 +532,11 @@ def runNodejsGenericJenkinsfile() {
                                 echo "The source code will be taken from a code repository, not from an artifact repository."
                                 echo "Source URL: ${projectURL}"
                                 echo "Source branch: ${branchName}"
-                                projectName = utils.getProjectName(packageJSON.name, branchType, branchNameHY)
-                                echo "Project Name: ${projectName}"
+                                project = utils.getProject(packageJSON.name)
+                                echo "Project: ${project}"
                                 echo "Custom build credentials id: ${params.customCredentials}"
                                 echo "Private repo: ${params.isPrivate}"
-                                buildCredentialsId=utils.getBuildCredentialsId(projectName,params.customCredentials,params.isPrivate)
+                                buildCredentialsId=utils.getBuildCredentialsId(project,params.customCredentials,params.isPrivate)
                                 echo "Credentials to use: ${buildCredentialsId}"
                             }
 
