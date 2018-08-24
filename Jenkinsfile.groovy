@@ -532,9 +532,6 @@ def runNodejsGenericJenkinsfile() {
                                 echo "The source code will be taken from a code repository, not from an artifact repository."
                                 echo "Source URL: ${projectURL}"
                                 echo "Source branch: ${branchName}"
-                                project = utils.getProject(packageJSON.name)
-                                buildCredentialsId=utils.getBuildCredentialsId(project,params.customCredentials,params.isPrivate)
-                                echo "Credentials to use: ${buildCredentialsId}"
                             }
 
                         } else {
@@ -663,6 +660,14 @@ def runNodejsGenericJenkinsfile() {
 
                 echo "useAlternateNpmRun: ${useAlternateNpmRun}"
                 echo "alternateNpmRunScript: ${alternateNpmRunScript}"
+
+                /**********************************************************
+                 ************* GIT SSH PRIVATE KEY CALCULATION ************
+                 **********************************************************/
+		project = utils.getProject(packageJSON.name)
+		buildCredentialsId=utils.getBuildCredentialsId(project,params.customCredentials,params.isPrivate)
+		echo "Credentials to use: ${buildCredentialsId}"
+
 
                 /**********************************************************
                  ************* OPENSHIFT PROJECT CREATION *****************
