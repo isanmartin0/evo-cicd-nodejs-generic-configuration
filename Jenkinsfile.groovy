@@ -678,7 +678,7 @@ def runNodejsGenericJenkinsfile() {
                  **********************************************************/
 
                 echo "Building image on OpenShift..."
-
+                projectURL=
                 nodejsOpenshiftCheckAndCreateProject {
                     oseCredential = openshiftCredential
                     cloudURL = openshiftURL
@@ -689,7 +689,7 @@ def runNodejsGenericJenkinsfile() {
                     branchHY = branchNameHY
                     branch_type = branchType
                     dockerRegistry = registry
-                    sourceRepositoryURL = projectURL
+                    sourceRepositoryURL = projectURL.replace('https://github.com','git@github.com:')
                     sourceRepositoryBranch = branchName
                     sourceprivatekey = buildCredentialsId
                     portNumber = port_number
