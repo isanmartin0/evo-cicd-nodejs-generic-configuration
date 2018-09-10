@@ -665,9 +665,8 @@ def runNodejsGenericJenkinsfile() {
                  ************* GIT SSH PRIVATE KEY CALCULATION ************
                  **********************************************************/
                 project = utils.getProject(packageJSON.name)
-                customCredenatials = params.customCredentials
                 echo "project: $project"
-                echo "customCredentials: $customCredentials"
+                echo "params.customCredentials: ${params.customCredentials}"
 
      
 		buildCredentialsId=utils.getBuildCredentialsId(project,params.customCredentials,params.isPrivate)
