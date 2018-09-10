@@ -8,6 +8,7 @@ useNpmMirror: false
 npmMirror: https://registry.npmjs.org/
 useAlternateNpmRun: false
 alternateNpmRunScript: script_alt
+customCredentials: ''
 isPrivate: true
 
 ports:
