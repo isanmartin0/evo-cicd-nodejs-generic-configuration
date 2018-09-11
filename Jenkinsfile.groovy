@@ -678,7 +678,6 @@ def runNodejsGenericJenkinsfile() {
                  **********************************************************/
 
                 echo "Building image on OpenShift..."
-                projectURL=
                 nodejsOpenshiftCheckAndCreateProject {
                     oseCredential = openshiftCredential
                     cloudURL = openshiftURL
