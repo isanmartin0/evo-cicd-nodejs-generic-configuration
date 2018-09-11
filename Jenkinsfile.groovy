@@ -17,11 +17,12 @@ def runNodejsGenericJenkinsfile() {
     def artifactoryNPMEmailAuthCredential = 'artifactory-npm-email-auth'
     def jenkinsNamespace = 'cicd'
     def params
+    def buildCredentialsId
+    def project
     String envLabel
     String branchName
     String branchNameHY
     String branchType
-
 
     //Parallel project configuration (PPC) properties
     def branchPPC = 'master'
@@ -661,11 +662,22 @@ def runNodejsGenericJenkinsfile() {
                 echo "alternateNpmRunScript: ${alternateNpmRunScript}"
 
                 /**********************************************************
+                 ************* GIT SSH PRIVATE KEY CALCULATION ************
+                 **********************************************************/
+                project = utils.getProject(packageJSON.name)
+                echo "project: $project"
+                echo "params.customCredentials: ${params.customCredentials}"
+
+     
+		buildCredentialsId=utils.getBuildCredentialsId(project,params.customCredentials,params.isPrivate)
+		echo "Credentials to use: ${buildCredentialsId}"
+
+
+                /**********************************************************
                  ************* OPENSHIFT PROJECT CREATION *****************
                  **********************************************************/
 
                 echo "Building image on OpenShift..."
-
                 nodejsOpenshiftCheckAndCreateProject {
                     oseCredential = openshiftCredential
                     cloudURL = openshiftURL
@@ -676,8 +688,9 @@ def runNodejsGenericJenkinsfile() {
                     branchHY = branchNameHY
                     branch_type = branchType
                     dockerRegistry = registry
-                    sourceRepositoryURL = projectURL
+                    sourceRepositoryURL = projectURL.replace('https://github.com','git@github.com:')
                     sourceRepositoryBranch = branchName
+                    sourceprivatekey = buildCredentialsId
                     portNumber = port_number
                     nodejsVersion = image_stream_nodejs_version
                     package_tag = packageTag
