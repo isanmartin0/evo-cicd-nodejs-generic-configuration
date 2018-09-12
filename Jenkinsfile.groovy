@@ -667,6 +667,7 @@ def runNodejsGenericJenkinsfile() {
                 project = utils.getProject(packageJSON.name)
                 echo "project: $project"
                 echo "params.customCredentials: ${params.customCredentials}"
+                echo "params.isPrivate: ${params.isPrivate}"
 
      
 		buildCredentialsId=utils.getBuildCredentialsId(project,params.customCredentials,params.isPrivate)
