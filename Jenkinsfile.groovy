@@ -754,6 +754,9 @@ def runNodejsGenericJenkinsfile() {
                     npmMirrorOpenshift = theNpmMirror
                     useAlternateNpmRunOpenshift = useAlternateNpmRun
                     alternateNpmRunScriptOpenshift = alternateNpmRunScript
+                    package_tag = packageTag
+                    package_tarball = packageTarball
+                    is_scoped_package = isScopedPackage
                 }
             }
 
